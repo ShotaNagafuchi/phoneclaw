@@ -3,9 +3,15 @@ PhoneClaw is an Android automation app that runs on-device workflows and lets yo
 
 PhoneClaw is inspired by Claude Bot/Claude Code and attempts to rebuild the agent loop for android phones natively to act as your personal assistant with access to all your apps. 
 **Demos**
+
+Automating Uploading Videos To Tiktok With Songs:
+
+[![Automating Uploading Videos To Tiktok With Songs:](https://img.youtube.com/vi/TRqPFSixaog/0.jpg)](https://www.youtube.com/watch?v=TRqPFSixaog)
+
+
 Automating Creating Instagram Accounts:
 
-[![Demo Video](https://img.youtube.com/vi/nB6yp3WRpt4/0.jpg)](https://www.youtube.com/watch?v=nB6yp3WRpt4)
+[![Automating Creating Instagram Accounts](https://img.youtube.com/vi/nB6yp3WRpt4/0.jpg)](https://www.youtube.com/watch?v=nB6yp3WRpt4)
 
 
 **ClawScript**
