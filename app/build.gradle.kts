@@ -41,8 +41,19 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
+
+// Allow debug builds without google-services.json
+afterEvaluate {
+    tasks.matching {
+        it.name.endsWith("GoogleServices") && it.name.contains("Debug")
+    }.configureEach {
+        enabled = false
+    }
+}
+
 dependencies {
     // Firebase - KEPT
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
