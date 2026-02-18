@@ -187,6 +187,11 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
         const val SETTINGS_REQUEST_CODE = 1002
         const val LOCATION_PERMISSION_REQUEST = 1003
         const val UNIVERSAL_SCRIPT_URL = "https://cheatlayer.com/universal4.txt"
+        const val KEY_OPENCLAW_GATEWAY_HOST = "openclaw_gateway_host"
+        const val KEY_OPENCLAW_GATEWAY_PORT = "openclaw_gateway_port"
+        const val KEY_OPENCLAW_GATEWAY_TOKEN = "openclaw_gateway_token"
+        const val DEFAULT_GATEWAY_HOST = "192.168.1.1"  // Change to your Gateway machine's IP
+        const val DEFAULT_GATEWAY_PORT = 18789
     }
 
     private lateinit var speechRecognizer: SpeechRecognizer
@@ -214,6 +219,13 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
     private var debugModeEnabled = false
     private var debugScreenshotJob: Job? = null
     private var lastScreenshotRef: String? = null
+
+    // OpenClaw Gateway Node integration
+    private var openClawGatewayClient: OpenClawGatewayClient? = null
+    private var nodeInvokeHandler: NodeInvokeHandler? = null
+    private var openClawHostEdit: com.google.android.material.textfield.TextInputEditText? = null
+    private var openClawPortEdit: com.google.android.material.textfield.TextInputEditText? = null
+    private var openClawConnectButton: MaterialButton? = null
 
     // CHANGED: Better coroutine management
     private val compositeJob = SupervisorJob()
@@ -1183,7 +1195,76 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
             speakText("Interface refreshed")
         }
 
+        setupOpenClawGateway()
+
         Log.d("MainActivity", "Modern UI initialized successfully")
+    }
+
+    private fun setupOpenClawGateway() {
+        openClawHostEdit = findViewById(R.id.openClawHostEdit)
+        openClawPortEdit = findViewById(R.id.openClawPortEdit)
+        openClawConnectButton = findViewById(R.id.openClawConnectButton)
+
+        val host = sharedPreferences.getString(KEY_OPENCLAW_GATEWAY_HOST, DEFAULT_GATEWAY_HOST) ?: DEFAULT_GATEWAY_HOST
+        val port = sharedPreferences.getInt(KEY_OPENCLAW_GATEWAY_PORT, DEFAULT_GATEWAY_PORT)
+        openClawHostEdit?.setText(host)
+        openClawPortEdit?.setText(port.toString())
+
+        val visionCallbacks = object : NodeInvokeHandler.VisionCallbacks {
+            override fun magicClick(description: String): Boolean {
+                return runBlocking(Dispatchers.Main) {
+                    AndroidJSInterface().executeMagicClickForGateway(description)
+                }
+            }
+            override fun magicScrape(question: String): String {
+                return AndroidJSInterface().magicScraper(question)
+            }
+        }
+        nodeInvokeHandler = NodeInvokeHandler(visionCallbacks)
+
+        val connectionCallback = object : OpenClawGatewayClient.ConnectionCallback {
+            override fun onConnecting() {
+                runOnUiThread {
+                    openClawConnectButton?.text = "Connecting..."
+                    openClawConnectButton?.isEnabled = false
+                }
+            }
+            override fun onConnected() {
+                runOnUiThread {
+                    openClawConnectButton?.text = "Disconnect"
+                    openClawConnectButton?.isEnabled = true
+                    updateStatusWithAnimation("OpenClaw Gateway connected")
+                }
+            }
+            override fun onDisconnected(reason: String) {
+                runOnUiThread {
+                    openClawConnectButton?.text = "Connect to Gateway"
+                    openClawConnectButton?.isEnabled = true
+                    if (reason != "Disconnected") {
+                        updateStatusWithAnimation("Gateway: $reason")
+                    }
+                }
+            }
+        }
+
+        openClawGatewayClient = OpenClawGatewayClient(this, nodeInvokeHandler!!, connectionCallback)
+
+        openClawConnectButton?.setOnClickListener {
+            animateButtonClick(it)
+            val client = openClawGatewayClient ?: return@setOnClickListener
+            if (client.isConnected()) {
+                client.disconnect()
+            } else {
+                val h = openClawHostEdit?.text?.toString()?.trim() ?: DEFAULT_GATEWAY_HOST
+                val p = openClawPortEdit?.text?.toString()?.toIntOrNull() ?: DEFAULT_GATEWAY_PORT
+                sharedPreferences.edit()
+                    .putString(KEY_OPENCLAW_GATEWAY_HOST, h)
+                    .putInt(KEY_OPENCLAW_GATEWAY_PORT, p)
+                    .apply()
+                val token = sharedPreferences.getString(KEY_OPENCLAW_GATEWAY_TOKEN, null)
+                client.connect(h, p, token)
+            }
+        }
     }
 
     private fun animateButtonClick(view: View) {
@@ -5967,6 +6048,24 @@ Generate JavaScript automation code for the user's command:
                 withContext(Dispatchers.Main) {
                     speakText("Error with magic click: ${e.message}")
                 }
+            }
+        }
+
+        /** Blocking magic click for OpenClaw Gateway node.invoke. Returns true if click succeeded. */
+        internal suspend fun executeMagicClickForGateway(description: String): Boolean {
+            return try {
+                val screenshot = takeScreenshotForAPI() ?: return false
+                val base64Image = bitmapToBase64(screenshot)
+                val coordinates = callMoondreamAPI(base64Image, description) ?: return false
+                val pixelX = (coordinates.x * 720).toFloat()
+                val pixelY = (coordinates.y * 1600).toFloat()
+                withContext(Dispatchers.Main) {
+                    MyAccessibilityService.instance?.simulateClick(pixelX, pixelY)
+                }
+                true
+            } catch (e: Exception) {
+                Log.e("MainActivity", "executeMagicClickForGateway error: ${e.message}")
+                false
             }
         }
         // Complete App Launching Functions magicClicker
