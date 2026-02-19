@@ -1196,8 +1196,16 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
         }
 
         setupOpenClawGateway()
+        setupObjectAgent()
 
         Log.d("MainActivity", "Modern UI initialized successfully")
+    }
+
+    private fun setupObjectAgent() {
+        findViewById<View>(R.id.openObjectAgentButton)?.setOnClickListener {
+            animateButtonClick(it)
+            startActivity(Intent(this, AgentObjectActivity::class.java))
+        }
     }
 
     private fun setupOpenClawGateway() {
@@ -1220,7 +1228,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
                 return AndroidJSInterface().magicScraper(question)
             }
         }
-        nodeInvokeHandler = NodeInvokeHandler(visionCallbacks)
+        nodeInvokeHandler = NodeInvokeHandler(visionCallbacks, this)
 
         val connectionCallback = object : OpenClawGatewayClient.ConnectionCallback {
             override fun onConnecting() {

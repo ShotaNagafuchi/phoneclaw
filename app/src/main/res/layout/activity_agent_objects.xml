@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_background">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#1e1e2e"
+        app:title="Object Agent"
+        app:titleTextColor="#cdd6f4"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+
+    <!-- Left panel: Objects list -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Objects"
+        android:textSize="14sp"
+        android:textColor="#cdd6f4"
+        android:textStyle="bold"
+        android:padding="8dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/objectsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        android:padding="4dp"
+        android:minHeight="100dp" />
+
+    <TextView
+        android:id="@+id/diffTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="12sp"
+        android:textColor="#a6adc8"
+        android:padding="8dp"
+        android:visibility="gone" />
+
+    <!-- Middle: Action bar -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/approveButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Approve"
+                android:layout_marginEnd="8dp"
+                app:backgroundTint="#a6e3a1"
+                style="@style/Widget.Material3.Button.UnelevatedButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/editButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit"
+                android:layout_marginEnd="8dp"
+                app:backgroundTint="#89b4fa"
+                style="@style/Widget.Material3.Button.UnelevatedButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/batchButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Batch Run"
+                android:layout_marginEnd="8dp"
+                app:backgroundTint="#fab387"
+                style="@style/Widget.Material3.Button.UnelevatedButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/undoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Undo"
+                app:backgroundTint="#f38ba8"
+                style="@style/Widget.Material3.Button.UnelevatedButton" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Right panel: Plan & execution log -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Plan &amp; Log"
+        android:textSize="14sp"
+        android:textColor="#cdd6f4"
+        android:textStyle="bold"
+        android:padding="8dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:fillViewport="true">
+
+        <TextView
+            android:id="@+id/execLogTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Execution log will appear here."
+            android:textSize="12sp"
+            android:textColor="#a6adc8"
+            android:padding="8dp" />
+    </ScrollView>
+</LinearLayout>

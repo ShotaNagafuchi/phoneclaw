@@ -184,7 +184,9 @@ class OpenClawGatewayClient(
             )))
             add("commands", gson.toJsonTree(listOf(
                 "android.tap", "android.swipe", "android.type",
-                "android.magicClick", "android.magicScraper", "android.getScreenText"
+                "android.magicClick", "android.magicScraper", "android.getScreenText",
+                "android.contacts.list", "android.calendar.list", "android.contacts.update",
+                "android.calendar.createEvent", "android.notifications.list"
             )))
             add("permissions", JsonObject().apply {
                 addProperty("accessibility", true)

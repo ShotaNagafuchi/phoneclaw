@@ -1,16 +1,18 @@
 package com.example.universal
 
+import android.content.Context
 import android.util.Log
 import com.google.gson.JsonObject
 import kotlinx.coroutines.runBlocking
 
 /**
  * Handles node.invoke requests from the OpenClaw Gateway.
- * Routes commands to MyAccessibilityService and optionally to vision callbacks
- * (magicClicker, magicScraper) provided by MainActivity.
+ * Routes commands to MyAccessibilityService, ObjectProviders (contacts/calendar),
+ * and optionally to vision callbacks (magicClicker, magicScraper) provided by MainActivity.
  */
 class NodeInvokeHandler(
-    private val visionCallbacks: VisionCallbacks?
+    private val visionCallbacks: VisionCallbacks?,
+    private val context: Context?
 ) {
     data class InvokeResult(
         val success: Boolean,
@@ -27,6 +29,11 @@ class NodeInvokeHandler(
                 "android.magicClick" -> handleMagicClick(params)
                 "android.magicScraper" -> handleMagicScraper(params)
                 "android.getScreenText" -> handleGetScreenText(params)
+                "android.contacts.list" -> handleContactsList(params)
+                "android.calendar.list" -> handleCalendarList(params)
+                "android.contacts.update" -> handleContactsUpdate(params)
+                "android.calendar.createEvent" -> handleCalendarCreateEvent(params)
+                "android.notifications.list" -> handleNotificationsList(params)
                 else -> InvokeResult(false, error = "Unknown command: $command")
             }
         } catch (e: Exception) {
@@ -133,6 +140,72 @@ class NodeInvokeHandler(
         val text = service.getAllTextFromScreen()
         return InvokeResult(true, JsonObject().apply {
             addProperty("text", text)
+        })
+    }
+
+    private fun handleContactsList(params: JsonObject): InvokeResult {
+        val ctx = context ?: return InvokeResult(false, error = "Context not available")
+        val limit = params.get("limit")?.asInt ?: 100
+        val contacts = ObjectProviders.listContacts(ctx, limit)
+        val arr = com.google.gson.JsonArray()
+        contacts.forEach { arr.add(it.toJsonObject()) }
+        return InvokeResult(true, JsonObject().apply {
+            add("contacts", arr)
+            addProperty("count", contacts.size)
+        })
+    }
+
+    private fun handleCalendarList(params: JsonObject): InvokeResult {
+        val ctx = context ?: return InvokeResult(false, error = "Context not available")
+        val startMs = params.get("startMillis")?.asLong ?: System.currentTimeMillis()
+        val endMs = params.get("endMillis")?.asLong
+            ?: (startMs + 7 * 24 * 60 * 60 * 1000L)
+        val limit = params.get("limit")?.asInt ?: 50
+        val events = ObjectProviders.listCalendarEvents(ctx, startMs, endMs, limit)
+        val arr = com.google.gson.JsonArray()
+        events.forEach { arr.add(it.toJsonObject()) }
+        return InvokeResult(true, JsonObject().apply {
+            add("events", arr)
+            addProperty("count", events.size)
+        })
+    }
+
+    private fun handleContactsUpdate(params: JsonObject): InvokeResult {
+        val ctx = context ?: return InvokeResult(false, error = "Context not available")
+        var contactId = params.get("contactId")?.asString ?: return InvokeResult(false, error = "Missing contactId")
+        contactId = contactId.removePrefix("contact-")
+        val displayName = params.get("displayName")?.asString
+        val ok = ObjectProviders.updateContact(ctx, contactId, displayName)
+        return InvokeResult(ok, JsonObject().apply {
+            addProperty("contactId", contactId)
+            addProperty("updated", ok)
+        })
+    }
+
+    private fun handleCalendarCreateEvent(params: JsonObject): InvokeResult {
+        val ctx = context ?: return InvokeResult(false, error = "Context not available")
+        val title = params.get("title")?.asString ?: return InvokeResult(false, error = "Missing title")
+        val dtStart = params.get("dtStart")?.asLong ?: return InvokeResult(false, error = "Missing dtStart")
+        val dtEnd = params.get("dtEnd")?.asLong ?: return InvokeResult(false, error = "Missing dtEnd")
+        val description = params.get("description")?.asString
+        val eventId = ObjectProviders.createCalendarEvent(ctx, title, dtStart, dtEnd, description)
+        return if (eventId != null) {
+            InvokeResult(true, JsonObject().apply {
+                addProperty("eventId", eventId)
+            })
+        } else {
+            InvokeResult(false, error = "Failed to create calendar event")
+        }
+    }
+
+    private fun handleNotificationsList(params: JsonObject): InvokeResult {
+        val limit = params.get("limit")?.asInt ?: 50
+        val notifications = NotificationCaptureService.getRecentNotifications(limit)
+        val arr = com.google.gson.JsonArray()
+        notifications.forEach { arr.add(it.toJsonObject()) }
+        return InvokeResult(true, JsonObject().apply {
+            add("notifications", arr)
+            addProperty("count", notifications.size)
         })
     }
 

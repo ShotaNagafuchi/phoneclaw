@@ -138,6 +138,53 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Object Agent -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/objectAgentCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#1e1e2e"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                app:strokeColor="#3d4354"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Object Agent"
+                        android:textSize="16sp"
+                        android:textColor="#cdd6f4"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Unified objects, batch edit, audit log"
+                        android:textSize="12sp"
+                        android:textColor="#a6adc8"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/openObjectAgentButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Open Object Agent"
+                        android:textColor="#ffffff"
+                        app:backgroundTint="#fab387"
+                        app:cornerRadius="12dp"
+                        style="@style/Widget.Material3.Button.UnelevatedButton" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Control Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
