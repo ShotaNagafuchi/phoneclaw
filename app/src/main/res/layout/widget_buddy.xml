@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@android:color/transparent">
+
+    <!-- 状態表示 -->
+    <TextView
+        android:id="@+id/widget_state"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/buddy_status_running"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#cba6f7"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 提案表示 -->
+    <TextView
+        android:id="@+id/widget_suggestion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/buddy_widget_suggestions_fmt"
+        android:textSize="12sp"
+        android:textColor="#f38ba8"
+        android:gravity="center"
+        android:layout_marginBottom="12dp" />
+
+    <!-- アクションボタン -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Chrome検索 -->
+        <Button
+            android:id="@+id/widget_search"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/widget_search"
+            android:textSize="10sp"
+            android:layout_marginEnd="4dp"
+            android:backgroundTint="#cba6f7" />
+
+        <!-- Wi-Fi確認 -->
+        <Button
+            android:id="@+id/widget_wifi"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/widget_wifi"
+            android:textSize="10sp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:backgroundTint="#f38ba8" />
+
+        <!-- 予定表示 -->
+        <Button
+            android:id="@+id/widget_calendar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/widget_calendar"
+            android:textSize="10sp"
+            android:layout_marginStart="4dp"
+            android:backgroundTint="#cba6f7" />
+    </LinearLayout>
+
+    <!-- 更新ボタン -->
+    <Button
+        android:id="@+id/widget_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_refresh"
+        android:textSize="10sp"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#f38ba8" />
+
+</LinearLayout>

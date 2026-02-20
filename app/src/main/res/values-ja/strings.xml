@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PhoneClaw</string>
+    <string name="action_settings">設定</string>
+    <string name="widget_description">AIアシスタントの状態と提案を表示</string>
+
+    <!-- Buddy / MVP -->
+    <string name="buddy_notification_title">Buddy稼働中</string>
+    <string name="buddy_notification_suggestions_fmt">今日の提案%1$d件</string>
+    <string name="buddy_notification_idle">待機中</string>
+    <string name="buddy_channel_name">Buddy Service</string>
+    <string name="buddy_channel_desc">AIアシスタントの常駐通知</string>
+    <string name="buddy_status_running">稼働中</string>
+    <string name="buddy_status_idle">待機中</string>
+    <string name="buddy_widget_suggestions_fmt">今日の提案: %d件</string>
+    <string name="buddy_widget_waiting">次の提案を待っています</string>
+    <string name="buddy_rule_channel_name">Buddyルール</string>
+    <string name="buddy_rule_channel_desc">AIアシスタントのルール通知</string>
+
+    <!-- Rule engine (TTS / notifications) -->
+    <string name="rule_first_unlock_tts">おはよう。今日の最優先は何にする？</string>
+    <string name="rule_wifi_off_title">Wi‑Fi未接続</string>
+    <string name="rule_wifi_off_message">Wi‑Fiが未接続。外出中モードに切り替える？</string>
+
+    <!-- MainActivity -->
+    <string name="accessibility_please_enable">音声自動化のため、ユーザー補助でアクセシビリティサービスを有効にしてください。</string>
+    <string name="openclaw_connect">Gatewayに接続</string>
+    <string name="openclaw_connecting">接続中…</string>
+    <string name="openclaw_disconnect">切断</string>
+
+    <!-- Widget buttons -->
+    <string name="widget_search">検索</string>
+    <string name="widget_wifi">Wi‑Fi</string>
+    <string name="widget_calendar">予定</string>
+    <string name="widget_refresh">更新</string>
+</resources>

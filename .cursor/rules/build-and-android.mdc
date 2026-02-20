@@ -1,0 +1,26 @@
+---
+description: ビルド前にコンパイル・Lintでエラー確認を行う
+globs: "**/*.kt"
+alwaysApply: false
+---
+
+# ビルド前のエラー確認
+
+## 必須チェック
+
+- **APKをビルドまたはインストールする前に**、必ず以下を実行してエラーを解消すること：
+  1. **コンパイル**: `./gradlew compileDebugKotlin` で Kotlin コンパイルエラーがないこと
+  2. **Lint**: `./gradlew lintDebug` で致命的な Lint エラーがないこと（可能なら解消）
+
+- 変更後は `assembleDebug` の前に上記のいずれか、または `assembleDebug` 実行でコンパイルが通ることを確認すること。
+
+## Android / Kotlin で注意すること
+
+- **lateinit の初期化順序**: `lateinit var` を使う場合、そのプロパティを参照するコードより**前**で必ず初期化すること。特に `onCreate` 内では、`initializeModernUI()` やその中で呼ばれる `setupXxx()` が `sharedPreferences` 等を参照する場合、それらより先に `sharedPreferences` を代入すること。
+- **UninitializedPropertyAccessException** を防ぐ: 初期化順序を見直し、参照時点で必ず初期化済みにする。
+
+## 推奨フロー
+
+1. コード変更
+2. `./gradlew compileDebugKotlin` でコンパイル確認
+3. 問題なければ `./gradlew assembleDebug` または `adb install -r ...`

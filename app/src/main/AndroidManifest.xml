@@ -60,6 +60,12 @@
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
+
+    <!-- Boot receiver -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Usage stats for app usage tracking -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
     <application
         android:name="com.example.universal.MyApplication"
         android:allowBackup="true"
@@ -72,11 +78,55 @@
             android:foregroundServiceType="mediaProjection"
             android:permission="android.permission.FOREGROUND_SERVICE">
         </service>
+
+        <!-- BuddyService: Foreground Service for AI assistant -->
+        <service
+            android:name="com.example.universal.BuddyService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"
+            android:permission="android.permission.FOREGROUND_SERVICE">
+        </service>
         <activity android:name="com.example.universal.ScreenshotActivity" />
         <activity
             android:name="com.example.universal.AgentObjectActivity"
             android:exported="false"
             android:theme="@style/Theme.MyApplication" />
+
+        <!-- Boot Receiver -->
+        <receiver
+            android:name="com.example.universal.BootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Unlock Receiver -->
+        <receiver
+            android:name="com.example.universal.UnlockReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.USER_PRESENT" />
+                <action android:name="android.intent.action.SCREEN_ON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Widget Provider -->
+        <receiver
+            android:name="com.example.universal.BuddyWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/buddy_widget_info" />
+        </receiver>
 
       <activity
             android:name="com.example.universal.MainActivity"

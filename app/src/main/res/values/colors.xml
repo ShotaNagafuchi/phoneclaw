@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Aurora UI Colors -->
+    <color name="aurora_purple">#cba6f7</color>
+    <color name="aurora_pink">#f38ba8</color>
+    <color name="aurora_background">#11111b</color>
+    <color name="aurora_surface">#1e1e2e</color>
+    <color name="aurora_text_primary">#cdd6f4</color>
+    <color name="aurora_text_secondary">#bac2de</color>
 </resources>

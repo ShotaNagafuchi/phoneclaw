@@ -1002,9 +1002,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        connectToHiltonHonors();
-
-        initializeModernUI()
+        connectToHiltonHonors()
 
         try {
             sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -1013,6 +1011,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
             Log.e("MainActivity", "Failed to initialize SharedPreferences: ${e.message}")
             sharedPreferences = getSharedPreferences("FallbackPrefs", Context.MODE_PRIVATE)
         }
+
+        initializeModernUI()
 
         initializeUserEmail()
         tts = TextToSpeech(this, this)
@@ -1075,8 +1075,21 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
 
         initializeUniversalScript()
 
+        // Start BuddyService
+        startBuddyService()
+
         updateUI()
         setupMicrophoneButton()
+    }
+
+    private fun startBuddyService() {
+        try {
+            val serviceIntent = Intent(this, BuddyService::class.java)
+            ContextCompat.startForegroundService(this, serviceIntent)
+            Log.d("MainActivity", "BuddyService started")
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Failed to start BuddyService", e)
+        }
     }
 
     private fun setupMicrophoneButton() {
@@ -1233,20 +1246,20 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
         val connectionCallback = object : OpenClawGatewayClient.ConnectionCallback {
             override fun onConnecting() {
                 runOnUiThread {
-                    openClawConnectButton?.text = "Connecting..."
+                    openClawConnectButton?.text = getString(R.string.openclaw_connecting)
                     openClawConnectButton?.isEnabled = false
                 }
             }
             override fun onConnected() {
                 runOnUiThread {
-                    openClawConnectButton?.text = "Disconnect"
+                    openClawConnectButton?.text = getString(R.string.openclaw_disconnect)
                     openClawConnectButton?.isEnabled = true
                     updateStatusWithAnimation("OpenClaw Gateway connected")
                 }
             }
             override fun onDisconnected(reason: String) {
                 runOnUiThread {
-                    openClawConnectButton?.text = "Connect to Gateway"
+                    openClawConnectButton?.text = getString(R.string.openclaw_connect)
                     openClawConnectButton?.isEnabled = true
                     if (reason != "Disconnected") {
                         updateStatusWithAnimation("Gateway: $reason")
@@ -4846,7 +4859,7 @@ Generate JavaScript automation code for the user's command:
             enabledId == myServiceId
         }
         if (!isEnabled) {
-            speakText("Please enable accessibility service for advanced voice automation")
+            speakText(getString(R.string.accessibility_please_enable))
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)

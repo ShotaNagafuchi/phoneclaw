@@ -1,6 +1,38 @@
 <resources>
     <string name="app_name">PhoneClaw</string>
     <string name="action_settings">Settings</string>
+    <string name="widget_description">Show AI assistant status and suggestions</string>
+
+    <!-- Buddy / MVP -->
+    <string name="buddy_notification_title">Buddy running</string>
+    <string name="buddy_notification_suggestions_fmt">%1$d suggestion(s) today</string>
+    <string name="buddy_notification_idle">Idle</string>
+    <string name="buddy_channel_name">Buddy Service</string>
+    <string name="buddy_channel_desc">AI assistant foreground notification</string>
+    <string name="buddy_status_running">Running</string>
+    <string name="buddy_status_idle">Idle</string>
+    <string name="buddy_widget_suggestions_fmt">Today\'s suggestions: %d</string>
+    <string name="buddy_widget_waiting">Waiting for next suggestion</string>
+    <string name="buddy_rule_channel_name">Buddy Rules</string>
+    <string name="buddy_rule_channel_desc">AI assistant rule notifications</string>
+
+    <!-- Rule engine (TTS / notifications) -->
+    <string name="rule_first_unlock_tts">Good morning. What\'s your top priority today?</string>
+    <string name="rule_wifi_off_title">Wi‑Fi disconnected</string>
+    <string name="rule_wifi_off_message">Wi‑Fi is disconnected. Switch to away mode?</string>
+
+    <!-- MainActivity -->
+    <string name="accessibility_please_enable">Please enable the accessibility service for advanced voice automation.</string>
+    <string name="openclaw_connect">Connect to Gateway</string>
+    <string name="openclaw_connecting">Connecting…</string>
+    <string name="openclaw_disconnect">Disconnect</string>
+
+    <!-- Widget buttons -->
+    <string name="widget_search">Search</string>
+    <string name="widget_wifi">Wi‑Fi</string>
+    <string name="widget_calendar">Schedule</string>
+    <string name="widget_refresh">Refresh</string>
+
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
