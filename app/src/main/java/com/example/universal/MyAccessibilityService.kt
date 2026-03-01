@@ -4,15 +4,19 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.accessibilityservice.GestureDescription.StrokeDescription
 import android.graphics.Path
+import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import java.util.Locale
-import android.graphics.Rect
 import android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK
 import android.widget.ScrollView
+import com.example.universal.edge.inference.EmotionOutput
+import java.util.Locale
 // Put this _inside_ your MyAccessibilityService companion object, or at top level
 // so you only compute it once.
 private val ACTION_IME_ENTER_COMPAT: Int by lazy {
@@ -40,11 +44,18 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
+    // Overlay eye
+    // ─────────────────────────────────────────────────────────────────────────────
+    private var overlayView: EmotionOrbView? = null
+    private var overlayWindowManager: WindowManager? = null
+
+    // ─────────────────────────────────────────────────────────────────────────────
     // Lifecycle Methods
     // ─────────────────────────────────────────────────────────────────────────────
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
+        setupOverlay()
         Log.w("MyAccessibilityService", "Accessibility Service Connected")
     }
 
@@ -57,9 +68,53 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        removeOverlay()
         super.onDestroy()
         instance = null
         Log.w("MyAccessibilityService", "Accessibility Service Destroyed")
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Overlay management
+    // ─────────────────────────────────────────────────────────────────────────────
+    private fun setupOverlay() {
+        if (overlayView != null) return
+        try {
+            overlayWindowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+            val size = (80 * resources.displayMetrics.density).toInt()
+            val params = WindowManager.LayoutParams(
+                size,
+                size,
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.TRANSLUCENT
+            ).apply {
+                gravity = Gravity.TOP or Gravity.END
+                x = 16
+                y = 100
+            }
+            overlayView = EmotionOrbView(this).also {
+                overlayWindowManager?.addView(it, params)
+            }
+            Log.d("MyAccessibilityService", "Overlay eye created")
+        } catch (e: Exception) {
+            Log.e("MyAccessibilityService", "Failed to create overlay: ${e.message}")
+        }
+    }
+
+    fun updateEyeEmotion(output: EmotionOutput) {
+        overlayView?.setEmotion(output)
+    }
+
+    private fun removeOverlay() {
+        try {
+            overlayView?.let { overlayWindowManager?.removeView(it) }
+            overlayView = null
+        } catch (e: Exception) {
+            Log.e("MyAccessibilityService", "Error removing overlay: ${e.message}")
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────────

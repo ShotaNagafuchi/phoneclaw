@@ -4598,8 +4598,9 @@ Generate JavaScript automation code for the user's command:
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
-            speakText("Voice automation ready. Tap the microphone button to give commands.")
-            updateStatusWithAnimation("🎤 Ready - Tap button to speak")
+            tts.language = Locale.JAPANESE
+            speakText("音声オートメーション準備完了。マイクボタンをタップしてください。")
+            updateStatusWithAnimation("🎤 準備完了 - ボタンをタップ")
         } else {
             Log.e("MainActivity", "Failed to initialize text to speech engine")
         }
