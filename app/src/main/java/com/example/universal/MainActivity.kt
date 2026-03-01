@@ -1453,7 +1453,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
         mainScope.launch {
             try {
                 Log.d("MainActivity", "Initializing Universal Script from $UNIVERSAL_SCRIPT_URL")
-                speakText("Initializing automation script")
+                speakText(getString(R.string.script_initializing))
                 MyAccessibilityService.instance?.simulateClick(560f, 1139f)
 
                 val scriptContent = downloadUniversalScript()
@@ -1463,7 +1463,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
                     saveUniversalScript(scriptContent)
 
                     Log.d("MainActivity", "Universal script loaded successfully: ${scriptContent.length} characters")
-                    speakText("Automation script loaded successfully")
+                    speakText(getString(R.string.script_loaded_success))
                  //   magicClicker("Start now button")
                     MyAccessibilityService.instance?.simulateClick(560f, 1139f)
 
@@ -1478,7 +1478,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
                     universalScriptContent = loadUniversalScript()
 
                     if (universalScriptContent.isNotEmpty()) {
-                        speakText("Loaded cached automation script")
+                        speakText(getString(R.string.script_loaded_cached))
                         scheduleUniversalScript()
 
                         delay(5000)
@@ -1486,12 +1486,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
                             executeUniversalScript()
                         }
                     } else {
-                        speakText("Unable to load automation script")
+                        speakText(getString(R.string.script_unable_to_load))
                     }
                 }
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error initializing universal script: ${e.message}")
-                speakText("Error loading automation script")
+                speakText(getString(R.string.script_error_loading))
             }
         }
     }
@@ -1559,7 +1559,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
         universalScriptJob?.cancel()
 
         universalScriptJob = mainScope.launch {
-            speakText("Scheduled daily automation script")
+            speakText(getString(R.string.script_scheduled_daily))
             Log.d("MainActivity", "Universal script scheduled to run every 24 hours")
 
             while (isActive && !isDestroyed) {
@@ -1614,8 +1614,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
         withContext(Dispatchers.Main) {
             try {
                 Log.d("MainActivity", "Executing universal script...")
-                updateStatusWithAnimation("⚡ Running daily automation script")
-                speakText("Running daily automation script")
+                updateStatusWithAnimation(getString(R.string.script_status_running_daily))
+                speakText(getString(R.string.script_running_daily))
 
                 if (universalScriptContent.isEmpty()) {
                     universalScriptContent = loadUniversalScript()
@@ -1630,12 +1630,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
                         saveCronTasks()
                     }
 
-                    speakText("Daily automation script completed successfully")
-                    updateStatusWithAnimation("✅ Daily script completed")
+                    speakText(getString(R.string.script_daily_completed))
+                    updateStatusWithAnimation(getString(R.string.script_status_daily_completed))
                     executeUniversalScript()
                     Log.d("MainActivity", "Universal script executed successfully")
                 } else {
-                    speakText("Daily automation script is empty")
+                    speakText(getString(R.string.script_daily_empty))
                     Log.w("MainActivity", "Universal script content is empty")
                 }
 
@@ -1643,8 +1643,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
 
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error executing universal script: ${e.message}")
-                speakText("Error executing daily automation script")
-                updateStatusWithAnimation("❌ Error in daily script")
+                speakText(getString(R.string.script_error_executing_daily))
+                updateStatusWithAnimation(getString(R.string.script_status_error_daily))
             }
         }
     }
@@ -2696,23 +2696,23 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
 
         mainScope.launch {
             try {
-                updateStatusWithAnimation("🔄 Reloading automation script...")
-                speakText("Reloading automation script from server")
+                updateStatusWithAnimation(getString(R.string.script_status_reloading))
+                speakText(getString(R.string.script_reloading))
 
                 val scriptContent = downloadUniversalScript()
 
                 if (scriptContent.isNotEmpty()) {
                     universalScriptContent = scriptContent
                     saveUniversalScript(scriptContent)
-                    speakText("Automation script updated successfully")
-                    updateStatusWithAnimation("✅ Script updated")
+                    speakText(getString(R.string.script_updated_success))
+                    updateStatusWithAnimation(getString(R.string.script_status_updated))
                 } else {
-                    speakText("Failed to reload script from server")
-                    updateStatusWithAnimation("❌ Script reload failed")
+                    speakText(getString(R.string.script_reload_failed))
+                    updateStatusWithAnimation(getString(R.string.script_status_reload_failed))
                 }
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error reloading universal script: ${e.message}")
-                speakText("Error reloading automation script")
+                speakText(getString(R.string.script_error_reloading))
             }
         }
     }
@@ -2810,7 +2810,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
 
     fun deleteTask(task: CronTask) {
         if (task.id == "universal_script_daily") {
-            speakText("Cannot delete daily automation script task")
+            speakText(getString(R.string.script_cannot_delete_daily))
             return
         }
 

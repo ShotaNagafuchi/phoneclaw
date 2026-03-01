@@ -25,6 +25,29 @@
     <!-- MainActivity -->
     <string name="accessibility_please_enable">音声自動化のため、ユーザー補助でアクセシビリティサービスを有効にしてください。</string>
     <string name="openclaw_connect">Gatewayに接続</string>
+
+    <!-- Automation script (Universal Script) -->
+    <string name="script_initializing">自動化スクリプトを読み込み中</string>
+    <string name="script_loaded_success">自動化スクリプトの読み込みに成功しました</string>
+    <string name="script_loaded_cached">キャッシュから自動化スクリプトを読み込みました</string>
+    <string name="script_unable_to_load">自動化スクリプトを読み込めません</string>
+    <string name="script_error_loading">自動化スクリプトの読み込みでエラーが発生しました</string>
+    <string name="script_scheduled_daily">日次自動化スクリプトをスケジュールしました</string>
+    <string name="script_running_daily">日次自動化スクリプトを実行中</string>
+    <string name="script_status_running_daily">⚡ 日次自動化スクリプトを実行中</string>
+    <string name="script_daily_completed">日次自動化スクリプトが正常に完了しました</string>
+    <string name="script_status_daily_completed">✅ 日次スクリプト完了</string>
+    <string name="script_daily_empty">日次自動化スクリプトが空です</string>
+    <string name="script_error_executing_daily">日次自動化スクリプトの実行でエラーが発生しました</string>
+    <string name="script_status_error_daily">❌ 日次スクリプトでエラー</string>
+    <string name="script_reloading">サーバーから自動化スクリプトを再読み込み中</string>
+    <string name="script_status_reloading">🔄 自動化スクリプトを再読み込み中…</string>
+    <string name="script_updated_success">自動化スクリプトの更新に成功しました</string>
+    <string name="script_reload_failed">サーバーからスクリプトの再読み込みに失敗しました</string>
+    <string name="script_status_updated">✅ スクリプトを更新しました</string>
+    <string name="script_status_reload_failed">❌ スクリプトの再読み込みに失敗</string>
+    <string name="script_error_reloading">自動化スクリプトの再読み込みでエラーが発生しました</string>
+    <string name="script_cannot_delete_daily">日次自動化スクリプトのタスクは削除できません</string>
     <string name="openclaw_connecting">接続中…</string>
     <string name="openclaw_disconnect">切断</string>
 

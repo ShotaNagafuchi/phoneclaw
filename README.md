@@ -28,14 +28,46 @@ PhoneClawはClaude Bot/Claude Codeにインスパイアされ、すべてのア�
 - 単一のフロー内でアプリ間（ブラウザ、メール、メディア、メッセージング）でアクションをチェーン
 - 異なるデバイスサイズ、レイアウト、言語設定に適応するフローを構築
 
-## セットアップ手順
+## セットアップ
 
-1. 最も安価なフォンは、米国のWalmartで購入できる$30のMoto G playです。これはデモで使用されているフォンです。
-2. Androidで開発者モードを有効にします。デバイスをルート化する必要はありません。
-3. Android Studioをダウンロードし、このリポジトリをダウンロードして開き、Build > Generate Bundles or APKs > Generate APKsをクリックします。
-4. APKをダウンロードまたはAndroidに転送して、インストールをクリックしてサイドロードします。権限を求められたら許可をクリックします。
-5. アプリが開いたら、音声コマンドを使用して「open twitter and click the blue post button every hour」のような簡単な自動化を生成します。
-6. エージェントを実行し、スケジュールを設定し、以下のような簡単な言語で編集できるファイルを出力します。
+### 必要な環境
+
+- Android 端末（開発者モード有効。ルート不要。デモは $30 の Moto G play 等で動作確認）
+- [Android Studio](https://developer.android.com/studio) または コマンドラインの Gradle
+
+### ビルド・インストール
+
+```bash
+# リポジトリのクローン
+git clone https://github.com/ShotaNagafuchi/phoneclaw.git
+cd phoneclaw
+
+# デバッグAPKをビルド
+./gradlew assembleDebug
+
+# 端末にインストール（USB接続 or 無線ADB）
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+APK の場所: `app/build/outputs/apk/debug/app-debug.apk`
+
+Android Studio の場合: プロジェクトを開き **Build > Build Bundle(s) / APK(s) > Build APK(s)** でビルドし、生成された APK を端末に転送してインストールできます。
+
+### 初回起動時
+
+1. PhoneClaw アプリを開く
+2. **アクセシビリティサービス**を有効にする（音声・自動化に必須）
+3. 必要に応じて**通知リスナー**等の権限を許可
+4. BuddyService が起動すると常駐通知「Buddy稼働中」が表示される
+
+### オプション: Moondream（ビジョン）認証トークン
+
+Moondream 認証トークンを使う場合は、Gradle プロパティで指定します（git に含めないこと）:
+
+```properties
+# local.properties (プロジェクトルート) または ~/.gradle/gradle.properties
+MOONDREAM_AUTH=YOUR_TOKEN_HERE
+```
 
 ## ClawScript
 
@@ -76,9 +108,11 @@ const otp = magicScraper("The 2FA code shown in the SMS notification")
 // ... otpを送信
 ```
 
-## OpenClaw Gateway経由でのNode.js使用
+## OpenClaw Gateway経由でのNode.js使用（オプション）
 
-PhoneClawは、OpenClaw Gatewayに接続して、Node.jsやその他のクライアントからWebSocket経由でデバイス自動化を制御できます。これにより、PCやサーバーからAndroidデバイスをリモートで操作できます。
+**OpenClaw はオプション機能です。** 接続しなければオンデバイス単体の自動化のみで利用でき、現在のビルドでも OpenClaw を「使わない」場合は画面上の Gateway 欄はそのまま表示されますが、接続しなければ影響しません。
+
+OpenClaw Gateway に接続すると、Node.js やその他のクライアントから WebSocket 経由でデバイス自動化を制御できます。PC やサーバーから Android をリモート操作したい場合に利用します。
 
 ### OpenClaw Gatewayとは
 
@@ -89,10 +123,10 @@ OpenClaw Gatewayは、PhoneClawをNodeとして接続し、AI駆動のデバイ�
 ### PhoneClawアプリでの接続方法
 
 1. PhoneClawアプリを開きます
-2. 「Connect to Gateway」ボタンをタップします
+2. 「Gatewayに接続」ボタンをタップします（英語表示の場合は "Connect to Gateway"）
 3. Gatewayのホスト名とポートを入力します（例: `localhost:8080` または `gateway.example.com:443`）
 4. 必要に応じて認証トークンを入力します
-5. 接続が確立されると、「OpenClaw Gateway connected」というステータスが表示されます
+5. 接続が確立されると、ステータスに接続完了が表示されます
 
 ### Node.jsからの使用方法
 
@@ -367,10 +401,10 @@ main();
 
 ## 国際化（i18n）
 
-表示言語は**端末のシステム言語**に従い、日本語・英語を切り替えます。
+表示言語は**端末のシステム言語**に従い、日本語・英語を切り替えます。アプリ内の文言（アクセシビリティの案内、Gateway接続、**自動化スクリプトの読み込み状態やTTSで読み上げるメッセージ**など）は、すべて `strings.xml` で管理されているため、端末を日本語にしている場合は日本語で表示・読み上げられます。
 
-- **英語（デフォルト）**: `res/values/strings.xml`
-- **日本語**: `res/values-ja/strings.xml`
+- **英語（デフォルト）**: `app/src/main/res/values/strings.xml`
+- **日本語**: `app/src/main/res/values-ja/strings.xml`
 
 ### 新しい言語を追加する
 
@@ -378,22 +412,7 @@ main();
 2. `values/strings.xml` にあるキーを同じ名前でコピーし、各文字列を翻訳する。
 3. ビルドすると、その言語がシステム言語のときに自動的に使われます。
 
-例: 韓国語を追加する場合
-
-```
-app/src/main/res/values-ko/strings.xml
-```
-
-## セットアップ
-
-### Moondream認証トークンの設定
-
-Moondream認証トークンをGradleプロパティで提供します（gitから除外されます）：
-
-```properties
-# local.properties (プロジェクトルート) または ~/.gradle/gradle.properties
-MOONDREAM_AUTH=YOUR_TOKEN_HERE
-```
+例: 韓国語を追加する場合 → `app/src/main/res/values-ko/strings.xml` を作成
 
 ## Edge AI 3層アーキテクチャ
 
@@ -463,39 +482,7 @@ AIは夜間充電中に「記憶の統合」を行い、その日のやりとり
 - ユーザーが無反応/悪反応 → β増加（そのアクションが選ばれにくくなる）
 - 探索と活用が自然にバランスされる（新しいアクションも確率的に試す）
 
-### ワークツリー手順（開発者向け）
-
-#### 1. リポジトリのクローンとブランチ切り替え
-
-```bash
-git clone https://github.com/ShotaNagafuchi/phoneclaw.git
-cd phoneclaw
-git checkout claude/edge-ai-android-architecture-klvmI
-```
-
-#### 2. Android Studioで開く
-
-1. Android Studioを起動
-2. 「Open」→ `phoneclaw/` フォルダを選択
-3. Gradle Syncが完了するまで待つ（Room, WorkManager, MediaPipe等の依存が自動DLされる）
-
-#### 3. ビルド＆実行
-
-```bash
-# コマンドラインの場合
-./gradlew assembleDebug
-
-# APKの場所
-app/build/outputs/apk/debug/app-debug.apk
-```
-
-#### 4. 端末へのインストール
-
-```bash
-adb install app/build/outputs/apk/debug/app-debug.apk
-```
-
-### Android上での起動手順
+### Android上での起動（Edge AI）
 
 1. PhoneClawアプリを開く
 2. アクセシビリティサービスの権限を許可（初回のみ）
