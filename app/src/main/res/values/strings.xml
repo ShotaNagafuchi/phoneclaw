@@ -23,32 +23,6 @@
 
     <!-- MainActivity -->
     <string name="accessibility_please_enable">Please enable the accessibility service for advanced voice automation.</string>
-    <string name="openclaw_connect">Connect to Gateway</string>
-
-    <!-- Automation script (Universal Script) -->
-    <string name="script_initializing">Initializing automation script</string>
-    <string name="script_loaded_success">Automation script loaded successfully</string>
-    <string name="script_loaded_cached">Loaded cached automation script</string>
-    <string name="script_unable_to_load">Unable to load automation script</string>
-    <string name="script_error_loading">Error loading automation script</string>
-    <string name="script_scheduled_daily">Scheduled daily automation script</string>
-    <string name="script_running_daily">Running daily automation script</string>
-    <string name="script_status_running_daily">⚡ Running daily automation script</string>
-    <string name="script_daily_completed">Daily automation script completed successfully</string>
-    <string name="script_status_daily_completed">✅ Daily script completed</string>
-    <string name="script_daily_empty">Daily automation script is empty</string>
-    <string name="script_error_executing_daily">Error executing daily automation script</string>
-    <string name="script_status_error_daily">❌ Error in daily script</string>
-    <string name="script_reloading">Reloading automation script from server</string>
-    <string name="script_status_reloading">🔄 Reloading automation script…</string>
-    <string name="script_updated_success">Automation script updated successfully</string>
-    <string name="script_reload_failed">Failed to reload script from server</string>
-    <string name="script_status_updated">✅ Script updated</string>
-    <string name="script_status_reload_failed">❌ Script reload failed</string>
-    <string name="script_error_reloading">Error reloading automation script</string>
-    <string name="script_cannot_delete_daily">Cannot delete daily automation script task</string>
-    <string name="openclaw_connecting">Connecting…</string>
-    <string name="openclaw_disconnect">Disconnect</string>
 
     <!-- Widget buttons -->
     <string name="widget_search">Search</string>

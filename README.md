@@ -482,6 +482,42 @@ AIは夜間充電中に「記憶の統合」を行い、その日のやりとり
 - ユーザーが無反応/悪反応 → β増加（そのアクションが選ばれにくくなる）
 - 探索と活用が自然にバランスされる（新しいアクションも確率的に試す）
 
+### ワークツリー手順（開発者向け）
+
+#### 1. リポジトリのクローンとブランチ切り替え
+
+```bash
+git clone https://github.com/ShotaNagafuchi/phoneclaw.git
+cd phoneclaw
+git checkout claude/edge-ai-android-architecture-klvmI
+```
+
+#### 2. Android Studioで開く
+
+1. Android Studioを起動
+2. 「Open」→ `phoneclaw/` フォルダを選択
+3. Gradle Syncが完了するまで待つ（Room, WorkManager, MediaPipe等の依存が自動DLされる）
+
+#### 3. ビルド＆実行
+
+```bash
+# コマンドラインの場合
+./gradlew assembleDebug
+
+# APKの場所
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+> **versionCode自動インクリメント**: `assembleDebug` / `assembleRelease` を実行するたびに `app/version.properties` 内の `VERSION_CODE` が自動的に+1されます。初回ビルド時にファイルが存在しない場合はversionCode=1で開始します。`version.properties` はローカル専用（`.gitignore`済み）なので、各開発者の環境で独立して管理されます。
+
+#### 4. 端末へのインストール
+
+```bash
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+> `-r` フラグは既存アプリの上書きインストールを許可します。versionCodeは自動インクリメントされるため、ダウングレードエラーは発生しません。
+
 ### Android上での起動（Edge AI）
 
 1. PhoneClawアプリを開く

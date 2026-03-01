@@ -6,6 +6,7 @@ import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.example.universal.edge.inference.EmotionResponseMapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -52,12 +53,23 @@ class UnlockReceiver : BroadcastReceiver() {
                 when (action) {
                     is RuleAction.TTS -> {
                         speakText(context, action.message)
+                        // 初回ルールでもEdge AIで感情を取得し目を更新
+                        triggerEdgeAIOverlay(ruleEngine)
                     }
                     is RuleAction.Notification -> {
                         showNotification(context, action.title, action.message)
                     }
                     null -> {
-                        Log.d(TAG, "No rule triggered")
+                        // ルール未発火 → Edge AIに判断させる
+                        val edgeAction = ruleEngine.evaluateEdgeAIReaction()
+                        if (edgeAction is RuleAction.EdgeAIReaction) {
+                            val text = EmotionResponseMapper.getResponse(edgeAction.output)
+                            speakText(context, text)
+                            MyAccessibilityService.instance?.updateEyeEmotion(edgeAction.output)
+                            Log.d(TAG, "Edge AI: ${edgeAction.output.selectedAction.type.name} → \"$text\"")
+                        } else {
+                            Log.d(TAG, "No rule triggered and Edge AI unavailable")
+                        }
                     }
                     else -> {
                         Log.d(TAG, "Unhandled action: $action")
@@ -66,6 +78,17 @@ class UnlockReceiver : BroadcastReceiver() {
             } catch (e: Exception) {
                 Log.e(TAG, "Error handling unlock", e)
             }
+        }
+    }
+
+    private suspend fun triggerEdgeAIOverlay(ruleEngine: RuleEngine) {
+        try {
+            val edgeAction = ruleEngine.evaluateEdgeAIReaction()
+            if (edgeAction is RuleAction.EdgeAIReaction) {
+                MyAccessibilityService.instance?.updateEyeEmotion(edgeAction.output)
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, "Edge AI overlay update skipped: ${e.message}")
         }
     }
 
