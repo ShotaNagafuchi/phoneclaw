@@ -489,11 +489,15 @@ git checkout claude/edge-ai-android-architecture-klvmI
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
+> **versionCode自動インクリメント**: `assembleDebug` / `assembleRelease` を実行するたびに `app/version.properties` 内の `VERSION_CODE` が自動的に+1されます。初回ビルド時にファイルが存在しない場合はversionCode=1で開始します。`version.properties` はローカル専用（`.gitignore`済み）なので、各開発者の環境で独立して管理されます。
+
 #### 4. 端末へのインストール
 
 ```bash
-adb install app/build/outputs/apk/debug/app-debug.apk
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
+
+> `-r` フラグは既存アプリの上書きインストールを許可します。versionCodeは自動インクリメントされるため、ダウングレードエラーは発生しません。
 
 ### Android上での起動手順
 

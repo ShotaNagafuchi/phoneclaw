@@ -5,6 +5,14 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+// --- versionCode 自動インクリメント ---
+val versionPropsFile = file("version.properties")
+val versionProps = java.util.Properties()
+if (versionPropsFile.exists()) {
+    versionProps.load(versionPropsFile.inputStream())
+}
+val autoVersionCode = (versionProps["VERSION_CODE"] as? String)?.toIntOrNull() ?: 1
+
 android {
     namespace = "com.example.universal"
     compileSdk = 35
@@ -13,7 +21,7 @@ android {
         applicationId = "com.example.universal"
         minSdk = 24
         targetSdk = 33
-        versionCode = 1
+        versionCode = autoVersionCode
         versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -115,4 +123,15 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+}
+
+// assembleのたびにversionCodeをインクリメント
+tasks.configureEach {
+    if (name.startsWith("assemble")) {
+        doLast {
+            val nextCode = autoVersionCode + 1
+            versionProps["VERSION_CODE"] = nextCode.toString()
+            versionProps.store(versionPropsFile.outputStream(), null)
+        }
+    }
 }
