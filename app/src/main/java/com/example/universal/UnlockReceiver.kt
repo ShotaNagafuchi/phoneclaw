@@ -3,6 +3,7 @@ package com.example.universal
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.core.content.ContextCompat
@@ -70,13 +71,19 @@ class UnlockReceiver : BroadcastReceiver() {
     }
 
     private fun speakText(context: Context, text: String) {
+        val appLocale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            context.resources.configuration.locales[0]
+        } else {
+            @Suppress("DEPRECATION")
+            context.resources.configuration.locale
+        }
         var tts: TextToSpeech? = null
         tts = TextToSpeech(context, object : TextToSpeech.OnInitListener {
             override fun onInit(status: Int) {
                 if (status == TextToSpeech.SUCCESS && tts != null) {
-                    tts!!.language = Locale.JAPANESE
+                    tts!!.language = appLocale
                     tts!!.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
-                    Log.d(TAG, "TTS: $text")
+                    Log.d(TAG, "TTS (locale=${appLocale.language}): $text")
                 } else {
                     Log.e(TAG, "TTS initialization failed")
                 }

@@ -28,14 +28,36 @@ PhoneClawはClaude Bot/Claude Codeにインスパイアされ、すべてのア�
 - 単一のフロー内でアプリ間（ブラウザ、メール、メディア、メッセージング）でアクションをチェーン
 - 異なるデバイスサイズ、レイアウト、言語設定に適応するフローを構築
 
-## セットアップ手順
+## 手順まとめ（ビルド・インストール・確認）
 
-1. 最も安価なフォンは、米国のWalmartで購入できる$30のMoto G playです。これはデモで使用されているフォンです。
-2. Androidで開発者モードを有効にします。デバイスをルート化する必要はありません。
-3. Android Studioをダウンロードし、このリポジトリをダウンロードして開き、Build > Generate Bundles or APKs > Generate APKsをクリックします。
-4. APKをダウンロードまたはAndroidに転送して、インストールをクリックしてサイドロードします。権限を求められたら許可をクリックします。
-5. アプリが開いたら、音声コマンドを使用して「open twitter and click the blue post button every hour」のような簡単な自動化を生成します。
-6. エージェントを実行し、スケジュールを設定し、以下のような簡単な言語で編集できるファイルを出力します。
+**前提**: Android で開発者モードを有効にし、USB で PC と接続。ルート化は不要。音声コマンドや magicClicker を使う場合は API キーが必要（下記「APIキー」参照）。
+
+| やりたいこと | コマンド |
+|-------------|----------|
+| バージョン確認 | `./gradlew showVersion` |
+| デバッグ APK をビルド | `./gradlew assembleDebug` |
+| バージョンを上げてからビルド | `./gradlew bumpVersion assembleDebug` |
+| **APK を端末にインストール** | `adb install -r app/build/outputs/apk/debug/app-debug.apk` |
+| ログで動作確認 | `./logcat-app.sh`（Git Bash/WSL/macOS）または `.\logcat-app.ps1`（PowerShell） |
+
+- **インストール**: 上記 `adb install -r` で既存インストールを上書き。別パスでビルドした場合はその `app-debug.apk` を指定する。
+- **ビルドの流れ**: 1) 必要なら `local.properties` に API キーを書く → 2) `./gradlew assembleDebug` → 3) `adb install -r ...` → 4) 端末でアプリを起動して確認。
+- バージョンは `version.properties` で管理。`bumpVersion` で versionCode と versionName（パッチ）を 1 ずつ増やせる。
+
+### APIキー（音声・ビジョン用）
+
+音声で「〇〇して」とコード生成するには **OpenRouter**、画面上の要素をタップする magicClicker には **Moondream** のキーが必要です。**ビルド時に埋め込むため、キーを設定したら必ず再ビルドしてください。**
+
+- **設定場所（どれか1つ）**: プロジェクト直下の `local.properties`（推奨・git に含めない）、または `~/.gradle/gradle.properties`（Windows は `%USERPROFILE%\.gradle\gradle.properties`）
+- **OPENROUTER_API_KEY**: [OpenRouter](https://openrouter.ai/) で発行。未設定だと音声コマンドで「AI service is unavailable」になります。
+- **MOONDREAM_AUTH**: magicClicker 用。未設定ならその機能だけ使えません。
+
+```properties
+OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx
+MOONDREAM_AUTH=your_moondream_token_here
+```
+
+手順: 1) 上記を `local.properties` に追記・編集 → 2) `./gradlew clean assembleDebug` → 3) `adb install -r app/build/outputs/apk/debug/app-debug.apk`。`local.properties` は通常 `.gitignore` に入っているためリポジトリにはコミットされません。
 
 ## ClawScript
 
@@ -52,318 +74,11 @@ ClawScriptは、組み込みのJSエンジンを使用してPhoneClaw内で実�
 - `sendAgentEmail(to, subject, message)` — 通知やハンドオフのためにデバイスからメールを送信します。
 - `safeInt(value, defaultVal)` — フォールバック付きで値を整数に安全にパースします。
 
-### magicClicker
+### 使い方のイメージ
 
-- スクリーンショットとビジョンを使用して、平易な言語で説明されたターゲットを見つけます。
-- Accessibilityサービスを通じて最適に一致するUI要素をタップします。
-- デバイス間でUIレイアウトがシフトする可能性がある繰り返し可能なフローに最適です。
-
-### magicScraper
-
-- スクリーンショットとビジョンを使用して、画面上に見えるものについての特定の質問に答えます。
-- スクリプトでパースしたり分岐したりできる簡潔な文字列を返します。
-- OTPコード、ステータスラベル、フィールド値などのテキストを読み取るのに最適です。
-
-### スクリプト例
-
-```js
-magicClicker("Create account")
-delay(1500)
-magicClicker("Email address field")
-// ... 独自の入力ヘルパーでテキストを入力
-magicClicker("Next")
-const otp = magicScraper("The 2FA code shown in the SMS notification")
-// ... otpを送信
-```
-
-## OpenClaw Gateway経由でのNode.js使用
-
-PhoneClawは、OpenClaw Gatewayに接続して、Node.jsやその他のクライアントからWebSocket経由でデバイス自動化を制御できます。これにより、PCやサーバーからAndroidデバイスをリモートで操作できます。
-
-### OpenClaw Gatewayとは
-
-OpenClaw Gatewayは、PhoneClawをNodeとして接続し、AI駆動のデバイス自動化を可能にするコントロールプレーンです。WebSocketプロトコルを使用して、リモートからデバイスを制御できます。
-
-詳細なプロトコル仕様: https://docs.openclaw.ai/gateway/protocol
-
-### PhoneClawアプリでの接続方法
-
-1. PhoneClawアプリを開きます
-2. 「Connect to Gateway」ボタンをタップします
-3. Gatewayのホスト名とポートを入力します（例: `localhost:8080` または `gateway.example.com:443`）
-4. 必要に応じて認証トークンを入力します
-5. 接続が確立されると、「OpenClaw Gateway connected」というステータスが表示されます
-
-### Node.jsからの使用方法
-
-Node.jsからOpenClaw Gateway経由でPhoneClawを制御するには、WebSocketクライアントを使用してGatewayに接続し、`node.invoke`メソッドを使用してコマンドを実行します。
-
-#### 基本的な使用例
-
-```javascript
-const WebSocket = require('ws');
-
-// Gatewayに接続
-const ws = new WebSocket('ws://localhost:8080');
-
-ws.on('open', () => {
-  // Gatewayに接続リクエストを送信
-  ws.send(JSON.stringify({
-    type: 'req',
-    id: 'connect-1',
-    method: 'connect',
-    params: {
-      minProtocol: 3,
-      maxProtocol: 3,
-      client: {
-        id: 'nodejs-client',
-        version: '1.0.0',
-        platform: 'nodejs',
-        mode: 'operator'
-      },
-      role: 'operator',
-      scopes: ['operator.read', 'operator.write'],
-      // 必要に応じて認証トークンを追加
-      auth: { token: 'YOUR_TOKEN_HERE' }
-    }
-  }));
-});
-
-ws.on('message', (data) => {
-  const message = JSON.parse(data);
-  
-  if (message.type === 'res' && message.ok) {
-    console.log('Connected to Gateway');
-    
-    // PhoneClawノードに対してコマンドを実行
-    invokeCommand('android.tap', { x: 500, y: 1000 });
-  }
-});
-
-function invokeCommand(command, params) {
-  ws.send(JSON.stringify({
-    type: 'req',
-    id: `invoke-${Date.now()}`,
-    method: 'node.invoke',
-    params: {
-      nodeId: 'phoneclaw-XXXX', // PhoneClawデバイスのID
-      command: command,
-      params: params
-    }
-  }));
-}
-```
-
-### 利用可能なコマンド
-
-PhoneClawは以下のコマンドをサポートしています：
-
-#### 基本操作
-
-- **`android.tap`** - 画面の指定座標をタップ
-  ```javascript
-  { x: 500, y: 1000 }
-  ```
-
-- **`android.swipe`** - スワイプジェスチャーを実行
-  ```javascript
-  { startX: 500, startY: 1000, endX: 500, endY: 500 }
-  ```
-
-- **`android.type`** - テキストを入力
-  ```javascript
-  { text: "Hello, World!" }
-  ```
-
-#### ビジョンベース操作
-
-- **`android.magicClick`** - 自然言語の説明でUI要素をクリック
-  ```javascript
-  { description: "Create account button" }
-  ```
-
-- **`android.magicScraper`** - 画面上の情報を読み取る
-  ```javascript
-  { question: "What is the OTP code shown on screen?" }
-  ```
-
-- **`android.getScreenText`** - 画面上のすべてのテキストを取得
-  ```javascript
-  {}
-  ```
-
-#### 連絡先とカレンダー
-
-- **`android.contacts.list`** - 連絡先リストを取得
-  ```javascript
-  { limit: 100 }
-  ```
-
-- **`android.contacts.update`** - 連絡先を更新
-  ```javascript
-  { contactId: "contact-123", displayName: "New Name" }
-  ```
-
-- **`android.calendar.list`** - カレンダーイベントを取得
-  ```javascript
-  { startMillis: 1234567890, endMillis: 1234567890, limit: 50 }
-  ```
-
-- **`android.calendar.createEvent`** - カレンダーイベントを作成
-  ```javascript
-  { 
-    title: "Meeting", 
-    dtStart: 1234567890, 
-    dtEnd: 1234567890,
-    description: "Optional description"
-  }
-  ```
-
-#### 通知
-
-- **`android.notifications.list`** - 最近の通知を取得
-  ```javascript
-  { limit: 50 }
-  ```
-
-### 完全なNode.js使用例
-
-```javascript
-const WebSocket = require('ws');
-
-class PhoneClawClient {
-  constructor(gatewayUrl, token = null) {
-    this.gatewayUrl = gatewayUrl;
-    this.token = token;
-    this.ws = null;
-    this.nodeId = null;
-  }
-
-  async connect() {
-    return new Promise((resolve, reject) => {
-      this.ws = new WebSocket(this.gatewayUrl);
-      
-      this.ws.on('open', () => {
-        this.ws.send(JSON.stringify({
-          type: 'req',
-          id: 'connect-1',
-          method: 'connect',
-          params: {
-            minProtocol: 3,
-            maxProtocol: 3,
-            client: {
-              id: 'nodejs-client',
-              version: '1.0.0',
-              platform: 'nodejs',
-              mode: 'operator'
-            },
-            role: 'operator',
-            scopes: ['operator.read', 'operator.write'],
-            auth: this.token ? { token: this.token } : undefined
-          }
-        }));
-      });
-
-      this.ws.on('message', (data) => {
-        const message = JSON.parse(data);
-        this.handleMessage(message, resolve, reject);
-      });
-
-      this.ws.on('error', reject);
-    });
-  }
-
-  handleMessage(message, resolve, reject) {
-    if (message.type === 'res' && message.ok) {
-      if (message.payload?.type === 'hello-ok') {
-        console.log('Connected to Gateway');
-        resolve();
-      }
-    } else if (message.type === 'event') {
-      // ノードの接続イベントなどを処理
-      if (message.event === 'node.connected') {
-        this.nodeId = message.payload?.nodeId;
-      }
-    }
-  }
-
-  async invoke(command, params) {
-    return new Promise((resolve, reject) => {
-      const id = `invoke-${Date.now()}`;
-      
-      const handler = (data) => {
-        const message = JSON.parse(data);
-        if (message.id === id) {
-          this.ws.removeListener('message', handler);
-          if (message.ok) {
-            resolve(message.payload);
-          } else {
-            reject(new Error(message.error));
-          }
-        }
-      };
-
-      this.ws.on('message', handler);
-
-      this.ws.send(JSON.stringify({
-        type: 'req',
-        id: id,
-        method: 'node.invoke',
-        params: {
-          nodeId: this.nodeId,
-          command: command,
-          params: params
-        }
-      }));
-    });
-  }
-
-  async tap(x, y) {
-    return this.invoke('android.tap', { x, y });
-  }
-
-  async magicClick(description) {
-    return this.invoke('android.magicClick', { description });
-  }
-
-  async magicScrape(question) {
-    return this.invoke('android.magicScraper', { question });
-  }
-
-  disconnect() {
-    if (this.ws) {
-      this.ws.close();
-    }
-  }
-}
-
-// 使用例
-async function main() {
-  const client = new PhoneClawClient('ws://localhost:8080');
-  
-  try {
-    await client.connect();
-    console.log('Connected!');
-    
-    // 画面をタップ
-    await client.tap(500, 1000);
-    
-    // ビジョンを使用してボタンをクリック
-    await client.magicClick('Create account button');
-    
-    // 画面上の情報を読み取る
-    const otp = await client.magicScrape('What is the OTP code?');
-    console.log('OTP:', otp);
-    
-  } catch (error) {
-    console.error('Error:', error);
-  } finally {
-    client.disconnect();
-  }
-}
-
-main();
-```
+- **magicClicker**: 「〇〇ボタン」「次の画面へ」など自然言語で指定すると、画面上の該当要素を探してタップします。レイアウトが変わりやすいフロー向け。
+- **magicScraper**: 「画面に表示されているOTPコードは？」など質問すると、短文で返します。分岐・検証に利用。
+- 音声で「〇〇して」と話すと OpenRouter が ClawScript を生成し、その場で実行されます。生成されたコードは履歴に残り、あとから編集・再実行も可能です。
 
 ## 国際化（i18n）
 
@@ -384,16 +99,27 @@ main();
 app/src/main/res/values-ko/strings.xml
 ```
 
-## セットアップ
+## ログの見方
 
-### Moondream認証トークンの設定
+USBで端末を接続した状態で、次のスクリプトを実行するとアプリのログだけが流れます。言語やTTSの挙動を確認するときなどに便利です。
 
-Moondream認証トークンをGradleプロパティで提供します（gitから除外されます）：
-
-```properties
-# local.properties (プロジェクトルート) または ~/.gradle/gradle.properties
-MOONDREAM_AUTH=YOUR_TOKEN_HERE
+```bash
+./logcat-app.sh          # Git Bash / WSL / macOS
+.\logcat-app.ps1         # PowerShell
 ```
+
+**操作ログ（タップ・画面遷移）だけ見る**  
+アクセシビリティで取得している「どこをタップしたか」「どの画面に変わったか」はタグ `A11yUX` で出ます。
+
+```bash
+adb logcat -s A11yUX
+```
+
+**今後の方針（画面キャプチャ・データ）**  
+起動のたびに「画面を共有するか／録画するか」を聞かないように、画面キャプチャは**設定ダッシュボードの「有効にする」で必要時のみ**許可を取得する形にしています。将来的には、常時録画ではなく**毎日のログと必要データだけをローカルに保存**し、スケジュールやヘルスケアなどは**スケジューラアプリ・ヘルスケアアプリから取得**する構成を想定しています（現状は未実装）。
+
+- **TTSの言語**: 起動時に「TTS locale: …」と「Speaking (locale=…): …」が出力されます。`locale=ja` かつ読み上げ文言が日本語なら、TTSエンジンも端末のロケールに合わせて日本語で話します。
+- **英語のまま話す場合**: 設定 → 言語で「日本語」が先頭か、端末の言語が日本語になっているか確認してください。アプリは**システムのロケール**で `getString()` と TTS の言語を決めています。
 
 ## 将来の開発計画
 

@@ -187,11 +187,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
         const val SETTINGS_REQUEST_CODE = 1002
         const val LOCATION_PERMISSION_REQUEST = 1003
         const val UNIVERSAL_SCRIPT_URL = "https://cheatlayer.com/universal4.txt"
-        const val KEY_OPENCLAW_GATEWAY_HOST = "openclaw_gateway_host"
-        const val KEY_OPENCLAW_GATEWAY_PORT = "openclaw_gateway_port"
-        const val KEY_OPENCLAW_GATEWAY_TOKEN = "openclaw_gateway_token"
-        const val DEFAULT_GATEWAY_HOST = "192.168.1.1"  // Change to your Gateway machine's IP
-        const val DEFAULT_GATEWAY_PORT = 18789
+        const val KEY_LAST_VERSION = "last_version"
     }
 
     private lateinit var speechRecognizer: SpeechRecognizer
@@ -219,13 +215,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
     private var debugModeEnabled = false
     private var debugScreenshotJob: Job? = null
     private var lastScreenshotRef: String? = null
-
-    // OpenClaw Gateway Node integration
-    private var openClawGatewayClient: OpenClawGatewayClient? = null
-    private var nodeInvokeHandler: NodeInvokeHandler? = null
-    private var openClawHostEdit: com.google.android.material.textfield.TextInputEditText? = null
-    private var openClawPortEdit: com.google.android.material.textfield.TextInputEditText? = null
-    private var openClawConnectButton: MaterialButton? = null
 
     // CHANGED: Better coroutine management
     private val compositeJob = SupervisorJob()
@@ -1012,6 +1001,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
             sharedPreferences = getSharedPreferences("FallbackPrefs", Context.MODE_PRIVATE)
         }
 
+        checkAndNotifyIfUpdated()
+
         initializeModernUI()
 
         initializeUserEmail()
@@ -1060,9 +1051,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
 
         logDebugModeStatus()
 
-        val intent = Intent(this, ScreenshotActivity::class.java)
-        startActivity(intent)
-
+        // 画面キャプチャは起動時には聞かず、設定ダッシュボードから「有効にする」で必要時のみ許可を取得
         checkAccessibilityPermission()
 
         loadCronTasks()
@@ -1090,6 +1079,20 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
         } catch (e: Exception) {
             Log.e("MainActivity", "Failed to start BuddyService", e)
         }
+    }
+
+    private fun checkAndNotifyIfUpdated() {
+        val currentVersion = BuildConfig.VERSION_NAME
+        val lastVersion = sharedPreferences.getString(KEY_LAST_VERSION, null)
+        if (lastVersion != null && lastVersion != currentVersion) {
+            val notificationManager = BuddyNotificationManager(this)
+            notificationManager.showRuleNotification(
+                getString(R.string.update_notification_title),
+                getString(R.string.update_notification_text, currentVersion)
+            )
+            Log.d("MainActivity", "Update notification shown: $lastVersion -> $currentVersion")
+        }
+        sharedPreferences.edit().putString(KEY_LAST_VERSION, currentVersion).apply()
     }
 
     private fun setupMicrophoneButton() {
@@ -1208,83 +1211,82 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
             speakText("Interface refreshed")
         }
 
-        setupOpenClawGateway()
         setupObjectAgent()
+        setupPermissionsSummary()
 
         Log.d("MainActivity", "Modern UI initialized successfully")
+    }
+
+    private fun getPermissionEntries(): List<Pair<String, Boolean>> {
+        val permList = listOf(
+            Manifest.permission.RECORD_AUDIO to "Microphone",
+            Manifest.permission.ACCESS_FINE_LOCATION to "Location (fine)",
+            Manifest.permission.ACCESS_COARSE_LOCATION to "Location (coarse)",
+            Manifest.permission.CAMERA to "Camera",
+            Manifest.permission.READ_CONTACTS to "Contacts (read)",
+            Manifest.permission.READ_CALENDAR to "Calendar (read)",
+            Manifest.permission.READ_EXTERNAL_STORAGE to "Storage (read)",
+            Manifest.permission.WRITE_EXTERNAL_STORAGE to "Storage (write)",
+        )
+        val list = permList.map { (perm, label) ->
+            label to (ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED)
+        }.toMutableList()
+        list.add("Accessibility" to isAccessibilityServiceEnabled())
+        return list
+    }
+
+    private fun setupPermissionsSummary() {
+        val row = findViewById<View>(R.id.permissionsSummaryRow) ?: return
+        val summaryText = findViewById<TextView>(R.id.permissionsSummaryText) ?: return
+        fun update() {
+            val entries = getPermissionEntries()
+            val granted = entries.count { it.second }
+            val total = entries.size
+            summaryText.text = "Permissions: $granted/$total"
+        }
+        update()
+        row.setOnClickListener {
+            update()
+            showSettingsDashboard()
+        }
+    }
+
+    private fun showSettingsDashboard() {
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_settings, null)
+        sheet.setContentView(view)
+        val container = view.findViewById<android.view.ViewGroup>(R.id.permissionsDashboardList) ?: return
+        container.removeAllViews()
+        val entries = getPermissionEntries()
+        for ((label, granted) in entries) {
+            val row = android.widget.TextView(this).apply {
+                text = (if (granted) "✅ " else "❌ ") + label
+                setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15f)
+                setTextColor(if (granted) 0xFF50a14f.toInt() else 0xFFe06c75.toInt())
+                setPadding(0, (12 * resources.displayMetrics.density).toInt(), 0, (12 * resources.displayMetrics.density).toInt())
+            }
+            container.addView(row)
+        }
+        view.findViewById<android.widget.Button>(R.id.screen_capture_enable_btn)?.setOnClickListener {
+            sheet.dismiss()
+            startActivity(Intent(this, ScreenshotActivity::class.java))
+        }
+        sheet.show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        findViewById<TextView>(R.id.permissionsSummaryText)?.let {
+            val entries = getPermissionEntries()
+            val granted = entries.count { e -> e.second }
+            it.text = "Permissions: $granted/${entries.size}"
+        }
     }
 
     private fun setupObjectAgent() {
         findViewById<View>(R.id.openObjectAgentButton)?.setOnClickListener {
             animateButtonClick(it)
             startActivity(Intent(this, AgentObjectActivity::class.java))
-        }
-    }
-
-    private fun setupOpenClawGateway() {
-        openClawHostEdit = findViewById(R.id.openClawHostEdit)
-        openClawPortEdit = findViewById(R.id.openClawPortEdit)
-        openClawConnectButton = findViewById(R.id.openClawConnectButton)
-
-        val host = sharedPreferences.getString(KEY_OPENCLAW_GATEWAY_HOST, DEFAULT_GATEWAY_HOST) ?: DEFAULT_GATEWAY_HOST
-        val port = sharedPreferences.getInt(KEY_OPENCLAW_GATEWAY_PORT, DEFAULT_GATEWAY_PORT)
-        openClawHostEdit?.setText(host)
-        openClawPortEdit?.setText(port.toString())
-
-        val visionCallbacks = object : NodeInvokeHandler.VisionCallbacks {
-            override fun magicClick(description: String): Boolean {
-                return runBlocking(Dispatchers.Main) {
-                    AndroidJSInterface().executeMagicClickForGateway(description)
-                }
-            }
-            override fun magicScrape(question: String): String {
-                return AndroidJSInterface().magicScraper(question)
-            }
-        }
-        nodeInvokeHandler = NodeInvokeHandler(visionCallbacks, this)
-
-        val connectionCallback = object : OpenClawGatewayClient.ConnectionCallback {
-            override fun onConnecting() {
-                runOnUiThread {
-                    openClawConnectButton?.text = getString(R.string.openclaw_connecting)
-                    openClawConnectButton?.isEnabled = false
-                }
-            }
-            override fun onConnected() {
-                runOnUiThread {
-                    openClawConnectButton?.text = getString(R.string.openclaw_disconnect)
-                    openClawConnectButton?.isEnabled = true
-                    updateStatusWithAnimation("OpenClaw Gateway connected")
-                }
-            }
-            override fun onDisconnected(reason: String) {
-                runOnUiThread {
-                    openClawConnectButton?.text = getString(R.string.openclaw_connect)
-                    openClawConnectButton?.isEnabled = true
-                    if (reason != "Disconnected") {
-                        updateStatusWithAnimation("Gateway: $reason")
-                    }
-                }
-            }
-        }
-
-        openClawGatewayClient = OpenClawGatewayClient(this, nodeInvokeHandler!!, connectionCallback)
-
-        openClawConnectButton?.setOnClickListener {
-            animateButtonClick(it)
-            val client = openClawGatewayClient ?: return@setOnClickListener
-            if (client.isConnected()) {
-                client.disconnect()
-            } else {
-                val h = openClawHostEdit?.text?.toString()?.trim() ?: DEFAULT_GATEWAY_HOST
-                val p = openClawPortEdit?.text?.toString()?.toIntOrNull() ?: DEFAULT_GATEWAY_PORT
-                sharedPreferences.edit()
-                    .putString(KEY_OPENCLAW_GATEWAY_HOST, h)
-                    .putInt(KEY_OPENCLAW_GATEWAY_PORT, p)
-                    .apply()
-                val token = sharedPreferences.getString(KEY_OPENCLAW_GATEWAY_TOKEN, null)
-                client.connect(h, p, token)
-            }
         }
     }
 
@@ -4677,6 +4679,18 @@ Generate JavaScript automation code for the user's command:
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
+            val locale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                resources.configuration.locales[0]
+            } else {
+                @Suppress("DEPRECATION")
+                resources.configuration.locale
+            }
+            tts.language = locale
+            Log.i("MainActivity", "TTS locale: $locale, language=${locale.language}")
+
+            val versionAnnouncement = getString(R.string.version_announcement_fmt, BuildConfig.VERSION_NAME)
+            Log.i("MainActivity", "Speaking (locale=${locale.language}): $versionAnnouncement")
+            speakText(versionAnnouncement)
             speakText("Voice automation ready. Tap the microphone button to give commands.")
             updateStatusWithAnimation("🎤 Ready - Tap button to speak")
         } else {
@@ -4687,6 +4701,7 @@ Generate JavaScript automation code for the user's command:
     private fun speakText(text: String) {
         try {
             if (::tts.isInitialized) {
+                Log.d("MainActivity", "TTS speak: ${text.take(80)}${if (text.length > 80) "…" else ""}")
                 val utteranceId = UUID.randomUUID().toString()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     tts.speak(text, TextToSpeech.QUEUE_ADD, null, utteranceId)
@@ -4848,21 +4863,27 @@ Generate JavaScript automation code for the user's command:
             }
         }
     }
-    private fun checkAccessibilityPermission() {
-        val am = getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-        val enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-        val myServiceId = "$packageName/.MyAccessibilityService"
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        val enabled = Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES) ?: return false
+        return enabled.split(':').any { it.contains(packageName) }
+    }
 
-        val isEnabled = enabledServices.any { serviceInfo ->
-            val enabledId = serviceInfo.resolveInfo.serviceInfo.packageName + "/" +
-                    serviceInfo.resolveInfo.serviceInfo.name
-            enabledId == myServiceId
+    private fun checkAccessibilityPermission() {
+        if (isAccessibilityServiceEnabled()) {
+            Log.d("MainActivity", "Accessibility already enabled, skipping settings")
+            return
         }
-        if (!isEnabled) {
-            speakText(getString(R.string.accessibility_please_enable))
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
+        runOnUiThread {
+            MaterialAlertDialogBuilder(this@MainActivity, R.style.MaterialAlertDialog)
+                .setTitle(getString(R.string.accessibility_dialog_title))
+                .setMessage(getString(R.string.accessibility_please_enable))
+                .setPositiveButton(getString(R.string.open_settings)) { _, _ ->
+                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(intent)
+                }
+                .setNegativeButton(getString(android.R.string.cancel), null)
+                .show()
         }
     }
 

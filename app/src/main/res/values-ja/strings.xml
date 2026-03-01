@@ -24,9 +24,22 @@
 
     <!-- MainActivity -->
     <string name="accessibility_please_enable">音声自動化のため、ユーザー補助でアクセシビリティサービスを有効にしてください。</string>
+    <string name="accessibility_dialog_title">ユーザー補助が必要です</string>
+    <string name="open_settings">設定を開く</string>
+    <string name="permissions_dialog_title">許可状況</string>
+    <string name="settings_dashboard_title">PhoneClaw 設定</string>
+    <string name="settings_dashboard_hint">メイン画面の「Permissions」をタップするとこのダッシュボードが開きます。許可はアプリに戻ると更新されます。</string>
+    <string name="screen_capture_section_title">画面キャプチャ（magicClicker・デバッグ用）</string>
+    <string name="screen_capture_enable_btn">有効にする</string>
+    <string name="screen_capture_hint">必要なときだけ有効にできます。起動のたびには聞きません。</string>
     <string name="openclaw_connect">Gatewayに接続</string>
     <string name="openclaw_connecting">接続中…</string>
     <string name="openclaw_disconnect">切断</string>
+
+    <!-- Version / Update -->
+    <string name="version_announcement_fmt">PhoneClaw バージョン %1$s</string>
+    <string name="update_notification_title">アプリが更新されました</string>
+    <string name="update_notification_text">PhoneClaw が %1$s に更新されました</string>
 
     <!-- Widget buttons -->
     <string name="widget_search">検索</string>

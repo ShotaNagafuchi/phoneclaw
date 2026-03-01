@@ -1,8 +1,17 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
 }
+
+val versionFile = file("${rootProject.projectDir}/version.properties")
+val versionProps = Properties().apply {
+    if (versionFile.exists()) versionFile.inputStream().use { load(it) }
+}
+val versionCodeFromFile = (versionProps.getProperty("versionCode") ?: "1").toInt().coerceAtLeast(1)
+val versionNameFromFile = versionProps.getProperty("versionName") ?: "1.0.0"
 
 android {
     namespace = "com.example.universal"
@@ -12,8 +21,8 @@ android {
         applicationId = "com.example.universal"
         minSdk = 24
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.1.0"
+        versionCode = versionCodeFromFile
+        versionName = versionNameFromFile
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -51,6 +60,40 @@ afterEvaluate {
         it.name.endsWith("GoogleServices") && it.name.contains("Debug")
     }.configureEach {
         enabled = false
+    }
+    // ビルド前にバージョンを表示（gradlew 実行時に分かるようにする）
+    listOf("assembleDebug", "assembleRelease").forEach { name ->
+        tasks.findByName(name)?.dependsOn("showVersion")
+    }
+}
+
+// 現在のバージョンを表示（gradlew 実行前のバージョンチェック用）
+tasks.register("showVersion") {
+    group = "version"
+    description = "Prints current version from version.properties"
+    doLast {
+        val vf = file("${rootProject.projectDir}/version.properties")
+        val p = Properties().apply { if (vf.exists()) vf.inputStream().use { load(it) } }
+        val code = (p.getProperty("versionCode") ?: "1").toInt().coerceAtLeast(1)
+        val name = p.getProperty("versionName") ?: "1.0.0"
+        println(">>> versionName=$name  versionCode=$code")
+    }
+}
+
+// version.properties の versionCode と versionName（パッチ）を 1 上げる
+tasks.register("bumpVersion") {
+    group = "version"
+    description = "Increments versionCode and versionName (patch) in version.properties"
+    doLast {
+        val vf = file("${rootProject.projectDir}/version.properties")
+        val p = Properties().apply { if (vf.exists()) vf.inputStream().use { load(it) } }
+        val code = (p.getProperty("versionCode") ?: "1").toInt().coerceAtLeast(1) + 1
+        val name = p.getProperty("versionName") ?: "1.0.0"
+        val parts = name.split(".")
+        val patch = parts.lastOrNull()?.toIntOrNull() ?: 0
+        val newName = parts.dropLast(1).joinToString(".").ifEmpty { "1.0" } + "." + (patch + 1)
+        vf.writeText("# Auto-updated by Gradle bumpVersion. Used by app/build.gradle.kts.\nversionCode=$code\nversionName=$newName\n")
+        println(">>> Bumped to versionName=$newName  versionCode=$code")
     }
 }
 

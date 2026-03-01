@@ -23,9 +23,22 @@
 
     <!-- MainActivity -->
     <string name="accessibility_please_enable">Please enable the accessibility service for advanced voice automation.</string>
+    <string name="accessibility_dialog_title">Accessibility required</string>
+    <string name="open_settings">Open settings</string>
+    <string name="permissions_dialog_title">Permission status</string>
+    <string name="settings_dashboard_title">PhoneClaw Settings</string>
+    <string name="settings_dashboard_hint">Tap a row on the main screen to open this dashboard. Permissions are refreshed when you return to the app.</string>
+    <string name="screen_capture_section_title">Screen capture (magicClicker / debug screenshots)</string>
+    <string name="screen_capture_enable_btn">Enable screen capture</string>
+    <string name="screen_capture_hint">Only when enabled. No prompt on every app open.</string>
     <string name="openclaw_connect">Connect to Gateway</string>
     <string name="openclaw_connecting">Connecting…</string>
     <string name="openclaw_disconnect">Disconnect</string>
+
+    <!-- Version / Update -->
+    <string name="version_announcement_fmt">PhoneClaw version %1$s</string>
+    <string name="update_notification_title">App updated</string>
+    <string name="update_notification_text">PhoneClaw has been updated to %1$s</string>
 
     <!-- Widget buttons -->
     <string name="widget_search">Search</string>
