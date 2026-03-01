@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#11111b">
+
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="56dp" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/urlInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="#1e1e2e"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
+        app:boxStrokeColor="#89b4fa"
+        app:hintTextColor="#6c7086">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/urlInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="URL"
+            android:textColor="#cdd6f4"
+            android:textColorHint="#6c7086"
+            android:textSize="14sp"
+            android:inputType="textUri"
+            android:imeOptions="actionGo"
+            android:singleLine="true" />
+    </com.google.android.material.textfield.TextInputLayout>
+</FrameLayout>

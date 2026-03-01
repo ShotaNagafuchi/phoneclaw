@@ -1182,6 +1182,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
             tab.text = when (position) {
                 0 -> "Scheduled Tasks"
                 1 -> "Generation History"
+                2 -> "Web"
                 else -> "Tab $position"
             }
         }.attach()
@@ -1239,12 +1240,13 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
     }
 
     class ViewPagerAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
-        override fun getItemCount(): Int = 2
+        override fun getItemCount(): Int = 3
 
         override fun createFragment(position: Int): Fragment {
             return when (position) {
                 0 -> ScheduledTasksFragment()
                 1 -> GenerationHistoryFragment()
+                2 -> WebViewFragment()
                 else -> ScheduledTasksFragment()
             }
         }

@@ -98,4 +98,5 @@ sealed class RuleAction {
     data class Notification(val title: String, val message: String) : RuleAction()
     data class Action(val actionType: String, val params: Map<String, Any> = emptyMap()) : RuleAction()
     data class EdgeAIReaction(val output: EmotionOutput) : RuleAction()
+    data class BrowserAction(val url: String, val action: String = "navigate") : RuleAction()
 }
