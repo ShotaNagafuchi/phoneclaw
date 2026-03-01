@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
     id("com.google.gms.google-services")
 }
 
@@ -91,6 +92,24 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
+
+    // Room (Edge AI データ層)
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+
+    // WorkManager (夜間メモリ統合)
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+
+    // MediaPipe Vision (表情報酬評価)
+    implementation("com.google.mediapipe:tasks-vision:0.10.14")
+
+    // CameraX (MediaPipe FaceMesh用)
+    val cameraXVersion = "1.3.4"
+    implementation("androidx.camera:camera-core:$cameraXVersion")
+    implementation("androidx.camera:camera-camera2:$cameraXVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraXVersion")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

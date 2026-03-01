@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
+import com.example.universal.edge.EdgeAIManager
+import com.example.universal.edge.inference.EmotionOutput
 import java.util.Calendar
 
 /**
@@ -61,6 +63,23 @@ class RuleEngine(private val context: Context) {
     }
 
     /**
+     * Edge AIリアクションを要求する。
+     * EdgeAIManagerが初期化済みかつ準備完了の場合のみ実行可能。
+     */
+    suspend fun evaluateEdgeAIReaction(): RuleAction? {
+        val edgeAI = EdgeAIManager.instance ?: return null
+        if (!edgeAI.isEngineReady()) return null
+
+        return try {
+            val output = edgeAI.reactAndLearn()
+            RuleAction.EdgeAIReaction(output)
+        } catch (e: Exception) {
+            Log.e(TAG, "EdgeAI reaction failed: ${e.message}")
+            null
+        }
+    }
+
+    /**
      * ルール3: 特定アプリの連続使用時間が閾値を超えているか
      * UsageTrackerと連携して実装
      */
@@ -78,4 +97,5 @@ sealed class RuleAction {
     data class TTS(val message: String) : RuleAction()
     data class Notification(val title: String, val message: String) : RuleAction()
     data class Action(val actionType: String, val params: Map<String, Any> = emptyMap()) : RuleAction()
+    data class EdgeAIReaction(val output: EmotionOutput) : RuleAction()
 }

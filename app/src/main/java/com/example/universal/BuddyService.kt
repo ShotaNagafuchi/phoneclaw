@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.universal.edge.EdgeAIManager
 import java.util.Calendar
 
 /**
@@ -41,6 +42,10 @@ class BuddyService : Service() {
         createNotificationChannel()
         updateSuggestionCount()
         startForeground(NOTIFICATION_ID, buildNotification())
+
+        // Edge AI 3層アーキテクチャを初期化
+        EdgeAIManager.init(this)
+
         Log.i(TAG, "BuddyService created and in foreground")
     }
 
