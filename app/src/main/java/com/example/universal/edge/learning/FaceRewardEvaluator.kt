@@ -200,7 +200,7 @@ class FaceRewardEvaluator(
                 avg[i] += f[i]
             }
         }
-        for (i in avg.indices) avg[i] /= features.size
+        for (i in avg.indices) avg[i] = avg[i] / features.size.toFloat()
         return avg
     }
 
