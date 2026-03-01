@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.example.universal.edge.data.ContextRepository
 import com.example.universal.edge.data.EdgeDatabase
+import com.example.universal.edge.data.entity.AIDiaryEntry
 import com.example.universal.edge.inference.EmotionOutput
 import com.example.universal.edge.inference.IEmotionEngine
 import com.example.universal.edge.inference.RuleBasedEmotionEngine
@@ -36,7 +37,8 @@ class EdgeAIManager private constructor(private val context: Context) {
     private val database = EdgeDatabase.getInstance(context)
     private val repository = ContextRepository(
         database.userProfileDao(),
-        database.interactionLogDao()
+        database.interactionLogDao(),
+        database.aiDiaryDao()
     )
 
     // 学習層コンポーネント
@@ -144,4 +146,16 @@ class EdgeAIManager private constructor(private val context: Context) {
 
     /** エンジンが準備完了か */
     fun isEngineReady(): Boolean = emotionEngine.isReady()
+
+    // --- AI日記 ---
+
+    /** 最近の日記エントリを取得（UIから呼び出し用） */
+    suspend fun getRecentDiary(limit: Int = 30): List<AIDiaryEntry> {
+        return repository.getRecentDiaryEntries(limit)
+    }
+
+    /** 特定の日付の日記を取得 */
+    suspend fun getDiaryByDate(date: String): AIDiaryEntry? {
+        return repository.getDiaryEntryByDate(date)
+    }
 }

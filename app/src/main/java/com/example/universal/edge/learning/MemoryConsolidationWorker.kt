@@ -23,7 +23,9 @@ import java.util.concurrent.TimeUnit
  * 1. 未統合ログを取得
  * 2. EmotionType別に報酬を集計
  * 3. ThompsonSamplingBandit.consolidate()でα/βをバッチ更新
- * 4. 統合済みログを削除
+ * 4. AI日記を生成・保存（ユーザーが「AIが何を見て学んだか」を確認できる）
+ * 5. 統合済みログを削除
+ * 6. 90日以上前の古い日記を削除
  *
  * 人間の睡眠中の記憶整理に相当する。
  */
@@ -65,7 +67,9 @@ class MemoryConsolidationWorker(
 
         return try {
             val db = EdgeDatabase.getInstance(applicationContext)
-            val repository = ContextRepository(db.userProfileDao(), db.interactionLogDao())
+            val repository = ContextRepository(
+                db.userProfileDao(), db.interactionLogDao(), db.aiDiaryDao()
+            )
             val bandit = ThompsonSamplingBandit()
 
             // 1. 未統合ログ取得
@@ -85,14 +89,24 @@ class MemoryConsolidationWorker(
             }
 
             // 3. プロファイルをバッチ更新
-            val currentProfile = repository.getUserProfile()
-            val updatedProfile = bandit.consolidate(currentProfile, actionRewards)
+            val profileBefore = repository.getUserProfile()
+            val updatedProfile = bandit.consolidate(profileBefore, actionRewards)
             repository.updateProfile(updatedProfile)
 
-            // 4. 統合済みログを削除
+            // 4. AI日記を生成・保存
+            val diaryEntry = DiaryWriter.compose(pendingLogs, profileBefore, updatedProfile)
+            repository.saveDiaryEntry(diaryEntry)
+            Log.d(TAG, "Diary written: ${diaryEntry.date}, " +
+                "${diaryEntry.totalInteractions} interactions")
+
+            // 5. 統合済みログを削除
             val logIds = pendingLogs.map { it.id }
             repository.markLogsConsolidated(logIds)
             repository.deleteConsolidatedLogs()
+
+            // 6. 90日以上前の古い日記を削除（ストレージ節約）
+            val cutoff = System.currentTimeMillis() - 90L * 24 * 60 * 60 * 1000
+            db.aiDiaryDao().deleteOlderThan(cutoff)
 
             Log.d(TAG, "Consolidated ${pendingLogs.size} logs, " +
                 "profile v${updatedProfile.version}, " +

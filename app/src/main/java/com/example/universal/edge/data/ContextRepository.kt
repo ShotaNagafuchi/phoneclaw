@@ -1,7 +1,9 @@
 package com.example.universal.edge.data
 
+import com.example.universal.edge.data.dao.AIDiaryDao
 import com.example.universal.edge.data.dao.InteractionLogDao
 import com.example.universal.edge.data.dao.UserProfileDao
+import com.example.universal.edge.data.entity.AIDiaryEntry
 import com.example.universal.edge.data.entity.ContextSnapshot
 import com.example.universal.edge.data.entity.InteractionLog
 import com.example.universal.edge.data.entity.UserProfile
@@ -17,11 +19,15 @@ interface IContextRepository {
     suspend fun markLogsConsolidated(ids: List<Long>)
     suspend fun deleteConsolidatedLogs()
     suspend fun updateProfile(profile: UserProfile)
+    suspend fun saveDiaryEntry(entry: AIDiaryEntry)
+    suspend fun getRecentDiaryEntries(limit: Int = 30): List<AIDiaryEntry>
+    suspend fun getDiaryEntryByDate(date: String): AIDiaryEntry?
 }
 
 class ContextRepository(
     private val profileDao: UserProfileDao,
-    private val logDao: InteractionLogDao
+    private val logDao: InteractionLogDao,
+    private val diaryDao: AIDiaryDao? = null
 ) : IContextRepository {
 
     override suspend fun getCurrentContext(): ContextSnapshot {
@@ -51,5 +57,17 @@ class ContextRepository(
 
     override suspend fun updateProfile(profile: UserProfile) {
         profileDao.upsertProfile(profile)
+    }
+
+    override suspend fun saveDiaryEntry(entry: AIDiaryEntry) {
+        diaryDao?.insert(entry)
+    }
+
+    override suspend fun getRecentDiaryEntries(limit: Int): List<AIDiaryEntry> {
+        return diaryDao?.getRecentEntries(limit) ?: emptyList()
+    }
+
+    override suspend fun getDiaryEntryByDate(date: String): AIDiaryEntry? {
+        return diaryDao?.getEntryByDate(date)
     }
 }

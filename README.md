@@ -395,6 +395,164 @@ Moondream認証トークンをGradleプロパティで提供します（gitか�
 MOONDREAM_AUTH=YOUR_TOKEN_HERE
 ```
 
+## Edge AI 3層アーキテクチャ
+
+PhoneClawには、オンデバイスで動作する**疎結合・モデル差し替え可能・パラメータ成長型**のAIアーキテクチャが組み込まれています。AIはユーザーとのやり取りを通じてパラメータを更新し、「その人専用の相棒」へと成長します。
+
+### アーキテクチャ概要
+
+```
+┌─────────────────────────────────────────┐
+│         推定層 (Inference Layer)          │
+│  IEmotionEngine インターフェース          │
+│  ├─ RuleBasedEngine (v1, LLMなし)        │
+│  ├─ AICoreEngine (Gemini Nano) [将来]    │
+│  └─ MediaPipeEngine (Gemma 2B) [将来]    │
+│  → モデル差し替え: swapEngine() 1行      │
+├─────────────────────────────────────────┤
+│         学習層 (Learning Layer)           │
+│  Thompson Sampling (Contextual Bandit)   │
+│  ├─ FaceRewardEvaluator (MediaPipe)      │
+│  ├─ LearningOrchestrator                │
+│  └─ MemoryConsolidationWorker (夜間統合)  │
+├─────────────────────────────────────────┤
+│         データ層 (Data Layer)             │
+│  Room DB (edge_ai.db)                    │
+│  ├─ UserProfile (人格パラメータ α/β)     │
+│  ├─ InteractionLog (短期記憶)            │
+│  ├─ ContextSnapshot (80次元文脈ベクトル)  │
+│  └─ AIDiaryEntry (AI日記)                │
+└─────────────────────────────────────────┘
+```
+
+### AI日記
+
+AIは夜間充電中に「記憶の統合」を行い、その日のやりとりを**AI視点の日記**として記録します。ユーザーはこの日記を見ることで、AIが何をどう見ているのか・何を学んだのかを確認できます。
+
+日記の例:
+```
+今日は12回やりとりしました。
+あなたが一番喜んでくれたのは「ユーモア」(7回中71%で好反応)でした。
+「心配」は空振りが多かったので、少し控えめにしようと思います。
+
+--- 性格の変化 ---
+ユーモア ■■■■■■□□□□ 0.42 → 0.58 (↑)
+共感　　 ■■■■■□□□□□ 0.50 → 0.52 (↗)
+心配　　 ■■■□□□□□□□ 0.45 → 0.35 (↓)
+
+今日はたくさん笑ってくれて嬉しかったです。明日もよろしくね。
+```
+
+### 動作の流れ
+
+1. **アプリ起動** → BuddyServiceが `EdgeAIManager.init()` を呼び出し、3層を初期化
+2. **日中のやりとり** → ユーザーの操作に応じて推定層が感情リアクションを推論
+   - Thompson Samplingが過去の学習パラメータからアクション（共感/ユーモア等）を選択
+   - MediaPipe FaceMeshがユーザーの表情（笑顔/しかめ面等）を検知して報酬スコア算出
+   - スコアに応じてα/βパラメータを即時更新＋InteractionLogに記録
+3. **夜間（充電中）** → MemoryConsolidationWorkerが自動実行
+   - 日中の短期記憶（ログ）を集約してプロファイルのα/βをバッチ更新
+   - AI日記を生成・保存
+   - 生のログを削除（ストレージ節約）
+4. **翌日** → 更新されたパラメータに基づいて、よりユーザーに合ったリアクションを生成
+
+### 学習アルゴリズム: Thompson Sampling
+
+- 各感情タイプ（共感/ユーモア/驚き/落ち着き/興奮/心配/励まし/好奇心）に対してBeta分布 Beta(α,β) を維持
+- ユーザーが好反応 → α増加（そのアクションが選ばれやすくなる）
+- ユーザーが無反応/悪反応 → β増加（そのアクションが選ばれにくくなる）
+- 探索と活用が自然にバランスされる（新しいアクションも確率的に試す）
+
+### ワークツリー手順（開発者向け）
+
+#### 1. リポジトリのクローンとブランチ切り替え
+
+```bash
+git clone https://github.com/ShotaNagafuchi/phoneclaw.git
+cd phoneclaw
+git checkout claude/edge-ai-android-architecture-klvmI
+```
+
+#### 2. Android Studioで開く
+
+1. Android Studioを起動
+2. 「Open」→ `phoneclaw/` フォルダを選択
+3. Gradle Syncが完了するまで待つ（Room, WorkManager, MediaPipe等の依存が自動DLされる）
+
+#### 3. ビルド＆実行
+
+```bash
+# コマンドラインの場合
+./gradlew assembleDebug
+
+# APKの場所
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+#### 4. 端末へのインストール
+
+```bash
+adb install app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Android上での起動手順
+
+1. PhoneClawアプリを開く
+2. アクセシビリティサービスの権限を許可（初回のみ）
+3. 通知リスナーの権限を許可（初回のみ）
+4. **BuddyServiceが自動起動** → 常駐通知「Buddy稼働中」が表示される
+5. BuddyService起動時に `EdgeAIManager.init()` が呼ばれ、以下が自動実行:
+   - Room DB (edge_ai.db) の初期化
+   - MediaPipe FaceLandmarkerモデルのロード
+   - MemoryConsolidationWorkerのスケジュール登録（6時間周期、充電+WiFi時のみ）
+6. 以降、AIのリアクションは自動的にバックグラウンドで学習が走る
+
+### Edge AIパッケージ構成
+
+```
+com.example.universal.edge/
+├── EdgeAIManager.kt              ← 統合マネージャー（外部はここだけ使う）
+├── data/
+│   ├── ContextRepository.kt      ← データ層契約 + 実装
+│   ├── EdgeDatabase.kt           ← Room DB定義
+│   ├── converter/FloatArrayConverter.kt
+│   ├── dao/
+│   │   ├── UserProfileDao.kt
+│   │   ├── InteractionLogDao.kt
+│   │   └── AIDiaryDao.kt
+│   └── entity/
+│       ├── ContextSnapshot.kt    ← 80次元文脈ベクトル
+│       ├── UserProfile.kt        ← Beta分布α/β (人格パラメータ)
+│       ├── InteractionLog.kt     ← 短期記憶ログ (~500B/record)
+│       └── AIDiaryEntry.kt       ← AI日記
+├── inference/
+│   ├── IEmotionEngine.kt         ← モデル差し替えインターフェース
+│   ├── EmotionOutput.kt          ← EmotionType(8種) + Action
+│   ├── OutputParser.kt           ← LLM出力安全弁パーサー
+│   └── RuleBasedEmotionEngine.kt ← v1実装 (Bandit + ルール)
+└── learning/
+    ├── IRewardEvaluator.kt       ← 報酬評価インターフェース
+    ├── FaceRewardEvaluator.kt    ← MediaPipe FaceMesh実装
+    ├── ThompsonSamplingBandit.kt ← Beta分布サンプリング
+    ├── LearningOrchestrator.kt   ← リアルタイム学習サイクル
+    ├── MemoryConsolidationWorker.kt ← 夜間パラメータ統合 + AI日記生成
+    └── DiaryWriter.kt            ← AI日記テキスト生成
+```
+
+### 推定エンジンの差し替え方法（将来）
+
+```kotlin
+// Gemini Nano に切り替え
+val aiCoreEngine = AICoreEmotionEngine(context)
+EdgeAIManager.instance?.swapEngine(aiCoreEngine)
+
+// Gemma 2B に切り替え
+val mediaLLMEngine = MediaPipeEmotionEngine(context, "gemma-2b.bin")
+EdgeAIManager.instance?.swapEngine(mediaLLMEngine)
+```
+
+`IEmotionEngine` インターフェースを実装するだけで、新しいモデルを追加可能です。
+
 ## 将来の開発計画
 
 PhoneClawは、より高度な個人アシスタント機能を目指して継続的に開発されています。以下の機能を今後実装予定です：
