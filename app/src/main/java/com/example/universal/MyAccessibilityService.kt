@@ -44,6 +44,14 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
+    // Observable state (for settings UI)
+    // ─────────────────────────────────────────────────────────────────────────────
+    var currentPackageName: String? = null
+        private set
+    var lastEmotionLabel: String? = null
+        private set
+
+    // ─────────────────────────────────────────────────────────────────────────────
     // Overlay eye
     // ─────────────────────────────────────────────────────────────────────────────
     private var overlayView: EmotionOrbView? = null
@@ -60,7 +68,7 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // Handle accessibility events if needed
+        event?.packageName?.toString()?.let { currentPackageName = it }
     }
 
     override fun onInterrupt() {
@@ -105,6 +113,7 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     fun updateEyeEmotion(output: EmotionOutput) {
+        lastEmotionLabel = "${output.selectedAction.type.name} (${String.format("%.1f", output.selectedAction.intensity)})"
         overlayView?.setEmotion(output)
     }
 

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#1e1e2e"
+    android:padding="24dp">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/status_background" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="設定"
+        android:textSize="20sp"
+        android:textColor="#cdd6f4"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Section: Permissions -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="許可状態"
+        android:textSize="13sp"
+        android:textColor="#cba6f7"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/permAccessibility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="AccessibilityService: ---"
+        android:textSize="13sp"
+        android:textColor="#a6adc8"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/permNotification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="通知アクセス: ---"
+        android:textSize="13sp"
+        android:textColor="#a6adc8"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/permUsageStats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="使用状況アクセス: ---"
+        android:textSize="13sp"
+        android:textColor="#a6adc8"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/permMicrophone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="マイク: ---"
+        android:textSize="13sp"
+        android:textColor="#a6adc8"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#313244"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Section: AI observation -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="AIの観察"
+        android:textSize="13sp"
+        android:textColor="#89b4fa"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/aiCurrentApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="現在のアプリ: ---"
+        android:textSize="13sp"
+        android:textColor="#a6adc8"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/aiLastEmotion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="最後の感情: ---"
+        android:textSize="13sp"
+        android:textColor="#a6adc8"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/aiPersonality"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="性格: ---"
+        android:textSize="13sp"
+        android:textColor="#a6adc8"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/aiEngine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="エンジン: ---"
+        android:textSize="13sp"
+        android:textColor="#a6adc8"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#313244"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Section: Toggles -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="機能"
+        android:textSize="13sp"
+        android:textColor="#a6e3a1"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="オーバーレイ表示"
+            android:textSize="14sp"
+            android:textColor="#cdd6f4" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/toggleOverlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:thumbTint="#cba6f7"
+            app:trackTint="#45475a" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="TTS発話"
+            android:textSize="14sp"
+            android:textColor="#cdd6f4" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/toggleTTS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:thumbTint="#cba6f7"
+            app:trackTint="#45475a" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="自律行動（実験中）"
+            android:textSize="14sp"
+            android:textColor="#585b70" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/toggleAutonomous"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:thumbTint="#45475a"
+            app:trackTint="#313244" />
+    </LinearLayout>
+
+    <!-- Reset button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/resetSoulButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Soul をリセット"
+        android:textSize="13sp"
+        android:textColor="#f38ba8"
+        app:backgroundTint="#181825"
+        app:strokeColor="#313244"
+        app:strokeWidth="1dp"
+        app:cornerRadius="12dp"
+        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+</LinearLayout>

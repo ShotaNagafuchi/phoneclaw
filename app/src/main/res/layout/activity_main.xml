@@ -1,94 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent">
+    android:background="#11111b">
 
-    <!-- Breathing Orb View -->
+    <!-- Settings button (top-left) -->
+    <ImageButton
+        android:id="@+id/settingsButton"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_gravity="top|start"
+        android:layout_marginTop="48dp"
+        android:layout_marginStart="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_manage"
+        android:contentDescription="設定"
+        android:padding="8dp"
+        android:elevation="4dp"
+        app:tint="#6c7086" />
+
+    <!-- Status text (top-right, compact) -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="52dp"
+        android:layout_marginEnd="16dp"
+        android:text="起動中..."
+        android:textSize="11sp"
+        android:textColor="#585b70"
+        android:maxLines="1" />
+
+    <!-- Orb (center, hero element) -->
     <com.example.universal.BreathingOrbView
         android:id="@+id/breathingOrbView"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="32dp"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="60dp"
         android:background="@android:color/transparent" />
 
-    <!-- Main Content -->
+    <!-- AI thought text (bottom center) -->
+    <TextView
+        android:id="@+id/aiThoughtText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="80dp"
+        android:gravity="center"
+        android:paddingHorizontal="32dp"
+        android:text="…"
+        android:textSize="16sp"
+        android:textColor="#a6adc8"
+        android:alpha="0.8"
+        android:maxLines="2"
+        android:ellipsize="end" />
+
+    <!-- Microphone FAB (bottom center) -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/microphoneButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_marginBottom="24dp"
+        android:text="🎤"
+        android:textSize="16sp"
+        app:backgroundTint="#1e1e2e"
+        app:strokeColor="#313244"
+        app:strokeWidth="1dp"
+        app:elevation="6dp" />
+
+    <!-- Scrollable lower content (drag up to reveal) -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_marginTop="520dp"
+        android:clipToPadding="false"
+        android:paddingBottom="120dp"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:background="@android:color/transparent">
+            android:paddingHorizontal="16dp">
 
-            <!-- Status Card -->
+            <!-- Swipe hint -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/status_background" />
+
+            <!-- AI Learning Log -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 app:cardBackgroundColor="#1e1e2e"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="8dp"
-                app:strokeColor="#3d4354"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="System Status"
-                        android:textSize="18sp"
-                        android:textColor="#cdd6f4"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp" />
-
-                    <TextView
-                        android:id="@+id/statusText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Initializing voice automation system..."
-                        android:textSize="14sp"
-                        android:textColor="#a6e3a1"
-                        android:background="@drawable/status_background"
-                        android:padding="12dp"
-                        android:drawablePadding="8dp" />
-<!-- Add this FloatingActionButton to your existing layout -->
-<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-    android:id="@+id/microphoneButton"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom|center"
-    android:layout_marginTop="24dp"
-    android:text="🎤 Tap to Speak"
-    android:textSize="16sp"
-    app:icon="@android:drawable/ic_btn_speak_now"
-    app:backgroundTint="#89b4fa"
-    app:elevation="6dp" />
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Object Agent -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/objectAgentCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#1e1e2e"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="8dp"
-                app:strokeColor="#3d4354"
+                app:cardElevation="4dp"
+                app:strokeColor="#313244"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -100,107 +116,85 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Object Agent"
-                        android:textSize="16sp"
-                        android:textColor="#cdd6f4"
+                        android:text="学習ログ"
+                        android:textSize="14sp"
+                        android:textColor="#cba6f7"
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp" />
 
-                    <TextView
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/diaryList"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Unified objects, batch edit, audit log"
-                        android:textSize="12sp"
-                        android:textColor="#a6adc8"
-                        android:layout_marginBottom="12dp" />
+                        android:nestedScrollingEnabled="false" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/openObjectAgentButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Open Object Agent"
-                        android:textColor="#ffffff"
-                        app:backgroundTint="#fab387"
-                        app:cornerRadius="12dp"
-                        style="@style/Widget.Material3.Button.UnelevatedButton" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Control Buttons -->
-            <LinearLayout
+            <!-- Soul Editor -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="#1e1e2e"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:strokeColor="#313244"
+                app:strokeWidth="1dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/clearScheduleButton"
-                    android:layout_width="0dp"
-                    android:layout_height="52dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:text="Clear Schedule"
-                    android:textColor="#ffffff"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    app:backgroundTint="#f38ba8"
-                    app:cornerRadius="12dp"
-                    app:elevation="4dp"
-                    style="@style/Widget.Material3.Button.UnelevatedButton" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/refreshButton"
-                    android:layout_width="0dp"
-                    android:layout_height="52dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="Refresh"
-                    android:textColor="#ffffff"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    app:backgroundTint="#89b4fa"
-                    app:cornerRadius="12dp"
-                    app:elevation="4dp"
-                    style="@style/Widget.Material3.Button.UnelevatedButton" />
-
-            </LinearLayout>
-
-            <!-- Tab Layout -->
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tabLayout"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/tab_background"
-                app:tabTextColor="#bac2de"
-                app:tabSelectedTextColor="#cdd6f4"
-                app:tabIndicatorColor="#89b4fa"
-                app:tabIndicatorHeight="3dp"
-                app:tabMode="fixed"
-                app:tabGravity="fill"
-                app:tabRippleColor="#45475a">
-
-                <com.google.android.material.tabs.TabItem
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Scheduled Tasks" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <com.google.android.material.tabs.TabItem
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Generation History" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
 
-            </com.google.android.material.tabs.TabLayout>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Soul"
+                            android:textSize="14sp"
+                            android:textColor="#f9e2af"
+                            android:textStyle="bold" />
 
-            <!-- Content ViewPager -->
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/viewPager"
-                android:layout_width="match_parent"
-                android:layout_height="600dp"
-                android:background="@drawable/content_background" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/saveSoulButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="保存"
+                            android:textSize="12sp"
+                            android:textColor="#1e1e2e"
+                            app:backgroundTint="#a6e3a1"
+                            app:cornerRadius="8dp"
+                            style="@style/Widget.Material3.Button.TonalButton" />
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/soulEditor"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="#181825"
+                        android:padding="12dp"
+                        android:textSize="12sp"
+                        android:textColor="#cdd6f4"
+                        android:fontFamily="monospace"
+                        android:gravity="top|start"
+                        android:inputType="textMultiLine"
+                        android:scrollbars="vertical"
+                        android:hint="soul.md を編集..."
+                        android:textColorHint="#45475a" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</FrameLayout>

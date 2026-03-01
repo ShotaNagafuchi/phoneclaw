@@ -89,16 +89,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
+import android.widget.EditText
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.appcompat.widget.Toolbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -202,14 +195,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
     private var universalScriptJob: Job? = null
     private var universalScriptContent: String = ""
 
-    private lateinit var toolbar: Toolbar
     private lateinit var statusText: TextView
-    private lateinit var clearScheduleButton: MaterialButton
-    private lateinit var refreshButton: MaterialButton
-    private lateinit var tabLayout: TabLayout
-    private lateinit var viewPager: ViewPager2
-    private lateinit var voiceFab: ExtendedFloatingActionButton
-    private lateinit var viewPagerAdapter: ViewPagerAdapter
+    private var aiThoughtText: TextView? = null
+    private var soulEditor: android.widget.EditText? = null
+    private var diaryAdapter: com.example.universal.ui.DiaryAdapter? = null
 
     private var debugModeEnabled = false
     private var debugScreenshotJob: Job? = null
@@ -1169,44 +1158,69 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
 
     private fun initializeModernUI() {
         statusText = findViewById(R.id.statusText)
-        clearScheduleButton = findViewById(R.id.clearScheduleButton)
-        refreshButton = findViewById(R.id.refreshButton)
-        tabLayout = findViewById(R.id.tabLayout)
-        viewPager = findViewById(R.id.viewPager)
         microphoneButton = findViewById(R.id.microphoneButton)
+        aiThoughtText = findViewById(R.id.aiThoughtText)
 
-        viewPagerAdapter = ViewPagerAdapter(this)
-        viewPager.adapter = viewPagerAdapter
-
-        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            tab.text = when (position) {
-                0 -> "Scheduled Tasks"
-                1 -> "Generation History"
-                2 -> "Web"
-                else -> "Tab $position"
-            }
-        }.attach()
-
-        clearScheduleButton.setOnClickListener {
-            animateButtonClick(it)
-            clearAllScheduledTasks()
+        // Settings button
+        findViewById<View>(R.id.settingsButton)?.setOnClickListener {
+            val sheet = com.example.universal.ui.SettingsBottomSheet()
+            sheet.onSoulReset = { loadSoulEditor() }
+            sheet.show(supportFragmentManager, com.example.universal.ui.SettingsBottomSheet.TAG)
         }
 
-        refreshButton.setOnClickListener {
-            animateButtonClick(it)
-            updateUI()
-            speakText("Interface refreshed")
+        // Soul editor
+        soulEditor = findViewById(R.id.soulEditor)
+        loadSoulEditor()
+        findViewById<View>(R.id.saveSoulButton)?.setOnClickListener {
+            val text = soulEditor?.text?.toString() ?: return@setOnClickListener
+            com.example.universal.edge.SoulManager.saveSoul(this, text)
+            updateAIThought("Soul 保存した")
         }
 
-        setupObjectAgent()
+        // Diary list
+        diaryAdapter = com.example.universal.ui.DiaryAdapter()
+        findViewById<RecyclerView>(R.id.diaryList)?.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = diaryAdapter
+        }
+        loadDiaryEntries()
 
         Log.d("MainActivity", "Modern UI initialized successfully")
     }
 
-    private fun setupObjectAgent() {
-        findViewById<View>(R.id.openObjectAgentButton)?.setOnClickListener {
-            animateButtonClick(it)
-            startActivity(Intent(this, AgentObjectActivity::class.java))
+    private fun loadSoulEditor() {
+        val soul = com.example.universal.edge.SoulManager.getSoul(this)
+        soulEditor?.setText(soul)
+    }
+
+    private fun loadDiaryEntries() {
+        mainScope.launch {
+            try {
+                val manager = com.example.universal.edge.EdgeAIManager.instance ?: return@launch
+                val entries = withContext(Dispatchers.IO) { manager.getRecentDiary(20) }
+                diaryAdapter?.submitList(entries)
+            } catch (e: Exception) {
+                Log.w("MainActivity", "Failed to load diary: ${e.message}")
+            }
+        }
+    }
+
+    fun updateAIThought(text: String) {
+        runOnUiThread {
+            aiThoughtText?.let { tv ->
+                val fadeOut = ObjectAnimator.ofFloat(tv, "alpha", tv.alpha, 0f)
+                fadeOut.duration = 150
+                fadeOut.addListener(object : android.animation.AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        tv.text = text
+                        ObjectAnimator.ofFloat(tv, "alpha", 0f, 0.8f).apply {
+                            duration = 200
+                            start()
+                        }
+                    }
+                })
+                fadeOut.start()
+            }
         }
     }
 
@@ -1239,135 +1253,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
         }
     }
 
-    class ViewPagerAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
-        override fun getItemCount(): Int = 3
-
-        override fun createFragment(position: Int): Fragment {
-            return when (position) {
-                0 -> ScheduledTasksFragment()
-                1 -> GenerationHistoryFragment()
-                2 -> WebViewFragment()
-                else -> ScheduledTasksFragment()
-            }
-        }
-    }
-
-    class ScheduledTasksFragment : Fragment() {
-        private lateinit var tasksRecyclerView: RecyclerView
-        private lateinit var swipeRefresh: SwipeRefreshLayout
-        private lateinit var tasksAdapter: TasksAdapter
-
-        override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-        ): View? {
-            return inflater.inflate(R.layout.fragment_scheduled_tasks, container, false)
-        }
-
-        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-            super.onViewCreated(view, savedInstanceState)
-
-            tasksRecyclerView = view.findViewById(R.id.tasksRecyclerView)
-            swipeRefresh = view.findViewById(R.id.swipeRefresh)
-
-            setupRecyclerView()
-            setupSwipeRefresh()
-        }
-
-        private fun setupRecyclerView() {
-            tasksAdapter = TasksAdapter(mutableListOf()) { action, task ->
-                val mainActivity = activity as? MainActivity
-                when (action) {
-                    "run" -> mainActivity?.runTaskNow(task)
-                    "delete" -> mainActivity?.deleteTask(task)
-                }
-            }
-
-            tasksRecyclerView.layoutManager = LinearLayoutManager(context)
-            tasksRecyclerView.adapter = tasksAdapter
-            tasksRecyclerView.itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator()
-        }
-
-        private fun setupSwipeRefresh() {
-            swipeRefresh.setColorSchemeColors(
-                0xFF89b4fa.toInt(),
-                0xFFa6e3a1.toInt(),
-                0xFFfab387.toInt()
-            )
-
-            swipeRefresh.setOnRefreshListener {
-                val mainActivity = activity as? MainActivity
-                mainActivity?.updateUI()
-                swipeRefresh.isRefreshing = false
-            }
-        }
-
-        fun updateTasks(tasks: List<CronTask>) {
-            if (::tasksAdapter.isInitialized) {
-                tasksAdapter.updateTasks(tasks)
-            }
-        }
-    }
-
-    class GenerationHistoryFragment : Fragment() {
-        private lateinit var historyRecyclerView: RecyclerView
-        private lateinit var swipeRefresh: SwipeRefreshLayout
-        private lateinit var historyAdapter: HistoryAdapter
-
-        override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-        ): View? {
-            return inflater.inflate(R.layout.fragment_generation_history, container, false)
-        }
-
-        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-            super.onViewCreated(view, savedInstanceState)
-
-            historyRecyclerView = view.findViewById(R.id.historyRecyclerView)
-            swipeRefresh = view.findViewById(R.id.swipeRefresh)
-
-            setupRecyclerView()
-            setupSwipeRefresh()
-        }
-
-        private fun setupRecyclerView() {
-            historyAdapter = HistoryAdapter(mutableListOf()) { action, history ->
-                val mainActivity = activity as? MainActivity
-                when (action) {
-                    "run" -> mainActivity?.runCode(history.generatedCode)
-                    "edit" -> mainActivity?.editCode(history)
-                    "schedule" -> mainActivity?.scheduleCode(history)
-                }
-            }
-
-            historyRecyclerView.layoutManager = LinearLayoutManager(context)
-            historyRecyclerView.adapter = historyAdapter
-            historyRecyclerView.itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator()
-        }
-
-        private fun setupSwipeRefresh() {
-            swipeRefresh.setColorSchemeColors(
-                0xFF89b4fa.toInt(),
-                0xFFa6e3a1.toInt(),
-                0xFFfab387.toInt()
-            )
-
-            swipeRefresh.setOnRefreshListener {
-                val mainActivity = activity as? MainActivity
-                mainActivity?.updateUI()
-                swipeRefresh.isRefreshing = false
-            }
-        }
-
-        fun updateHistory(history: List<GenerationHistory>) {
-            if (::historyAdapter.isInitialized) {
-                historyAdapter.updateHistory(history)
-            }
-        }
-    }
+    // ViewPagerAdapter, ScheduledTasksFragment, GenerationHistoryFragment removed — UI is now orb-centric
 
 
     private fun initializeUniversalScript() {
@@ -2694,13 +2580,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener, Recogniti
             val tasksCount = cronTasks.size
             val historyCount = generationHistory.size
 
-            updateStatusWithAnimation("📊 Active Tasks: $tasksCount | History: $historyCount")
-
-            val tasksFragment = supportFragmentManager.findFragmentByTag("f0") as? ScheduledTasksFragment
-            tasksFragment?.updateTasks(cronTasks.values.toList())
-
-            val historyFragment = supportFragmentManager.findFragmentByTag("f1") as? GenerationHistoryFragment
-            historyFragment?.updateHistory(generationHistory.toList())
+            updateStatusWithAnimation("T:$tasksCount H:$historyCount")
+            loadDiaryEntries()
 
             Log.d("MainActivity", "UI updated - Tasks: $tasksCount, History: $historyCount")
         }
