@@ -23,9 +23,6 @@
 
     <!-- MainActivity -->
     <string name="accessibility_please_enable">Please enable the accessibility service for advanced voice automation.</string>
-    <string name="openclaw_connect">Connect to Gateway</string>
-    <string name="openclaw_connecting">Connecting…</string>
-    <string name="openclaw_disconnect">Disconnect</string>
 
     <!-- Widget buttons -->
     <string name="widget_search">Search</string>

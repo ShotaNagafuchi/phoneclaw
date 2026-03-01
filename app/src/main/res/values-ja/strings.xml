@@ -24,9 +24,6 @@
 
     <!-- MainActivity -->
     <string name="accessibility_please_enable">音声自動化のため、ユーザー補助でアクセシビリティサービスを有効にしてください。</string>
-    <string name="openclaw_connect">Gatewayに接続</string>
-    <string name="openclaw_connecting">接続中…</string>
-    <string name="openclaw_disconnect">切断</string>
 
     <!-- Widget buttons -->
     <string name="widget_search">検索</string>
