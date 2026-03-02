@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -7,7 +9,7 @@ plugins {
 
 // --- versionCode 自動インクリメント ---
 val versionPropsFile = file("version.properties")
-val versionProps = java.util.Properties()
+val versionProps = Properties()
 if (versionPropsFile.exists()) {
     versionProps.load(versionPropsFile.inputStream())
 }
