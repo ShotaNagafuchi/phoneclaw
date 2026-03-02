@@ -6,6 +6,7 @@ import android.graphics.*
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
 import com.example.universal.edge.inference.EmotionOutput
@@ -24,6 +25,16 @@ class EmotionOrbView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
+
+    // --- タッチハンドリング ---
+    var onDragListener: ((deltaX: Int, deltaY: Int) -> Unit)? = null
+    var onTapListener: (() -> Unit)? = null
+    private var isDragging = false
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
+    private var dragStartX = 0f
+    private var dragStartY = 0f
+    private val dragThreshold = 10f * resources.displayMetrics.density
 
     // --- 感情対応パラメータ ---
     private var primaryColor: Int = Color.parseColor("#cba6f7")
@@ -270,6 +281,44 @@ class EmotionOrbView @JvmOverloads constructor(
         val g = (Color.green(color1) + (Color.green(color2) - Color.green(color1)) * fraction).toInt().coerceIn(0, 255)
         val b = (Color.blue(color1) + (Color.blue(color2) - Color.blue(color1)) * fraction).toInt().coerceIn(0, 255)
         return Color.rgb(r, g, b)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                isDragging = false
+                lastTouchX = event.rawX
+                lastTouchY = event.rawY
+                dragStartX = event.rawX
+                dragStartY = event.rawY
+                return true
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val dx = event.rawX - lastTouchX
+                val dy = event.rawY - lastTouchY
+                val totalDx = event.rawX - dragStartX
+                val totalDy = event.rawY - dragStartY
+
+                if (!isDragging && (abs(totalDx) > dragThreshold || abs(totalDy) > dragThreshold)) {
+                    isDragging = true
+                }
+
+                if (isDragging) {
+                    onDragListener?.invoke(dx.toInt(), dy.toInt())
+                    lastTouchX = event.rawX
+                    lastTouchY = event.rawY
+                }
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
+                if (!isDragging) {
+                    onTapListener?.invoke()
+                }
+                isDragging = false
+                return true
+            }
+        }
+        return super.onTouchEvent(event)
     }
 
     override fun onDetachedFromWindow() {

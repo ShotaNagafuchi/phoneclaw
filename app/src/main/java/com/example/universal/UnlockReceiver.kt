@@ -6,6 +6,7 @@ import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.example.universal.edge.EdgeAIManager
 import com.example.universal.edge.inference.EmotionResponseMapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,7 +64,8 @@ class UnlockReceiver : BroadcastReceiver() {
                         // ルール未発火 → Edge AIに判断させる
                         val edgeAction = ruleEngine.evaluateEdgeAIReaction()
                         if (edgeAction is RuleAction.EdgeAIReaction) {
-                            val text = EmotionResponseMapper.getResponse(edgeAction.output)
+                            val text = EdgeAIManager.instance?.generateTextResponse(edgeAction.output, context)
+                                ?: EmotionResponseMapper.getResponse(edgeAction.output)
                             speakText(context, text)
                             MyAccessibilityService.instance?.updateEyeEmotion(edgeAction.output)
                             Log.d(TAG, "Edge AI: ${edgeAction.output.selectedAction.type.name} → \"$text\"")

@@ -13,6 +13,12 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.universal.edge.EdgeAIManager
+import com.example.universal.edge.inference.LlmModelManager
+import com.example.universal.edge.inference.LlmResponseGenerator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 /**
@@ -34,6 +40,7 @@ class BuddyService : Service() {
 
     private lateinit var sharedPreferences: SharedPreferences
     private var suggestionCount = 0
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     override fun onCreate() {
         super.onCreate()
@@ -46,7 +53,44 @@ class BuddyService : Service() {
         // Edge AI 3層アーキテクチャを初期化
         EdgeAIManager.init(this)
 
+        // ローカルLLMの初期化（バックグラウンド）
+        initializeLlm()
+
         Log.i(TAG, "BuddyService created and in foreground")
+    }
+
+    /**
+     * LLMモデルのDL→初期化をバックグラウンドで実行。
+     * Wi-Fi接続時のみDL。DL済みなら即初期化してResponseGeneratorを差し替え。
+     */
+    private fun initializeLlm() {
+        serviceScope.launch(Dispatchers.IO) {
+            try {
+                // モデル未DLかつWi-Fi接続時 → ダウンロード
+                if (!LlmModelManager.isModelReady(this@BuddyService)) {
+                    if (LlmModelManager.isWifiConnected(this@BuddyService)) {
+                        Log.i(TAG, "Starting LLM model download...")
+                        LlmModelManager.downloadModel(this@BuddyService) { progress ->
+                            Log.d(TAG, "LLM model download: ${(progress * 100).toInt()}%")
+                        }
+                    } else {
+                        Log.d(TAG, "LLM model not downloaded, no Wi-Fi")
+                        return@launch
+                    }
+                }
+
+                // モデル準備完了 → LLM推論エンジン初期化
+                if (LlmModelManager.isModelReady(this@BuddyService)) {
+                    val llm = LlmResponseGenerator(this@BuddyService)
+                    if (llm.initialize()) {
+                        EdgeAIManager.instance?.swapResponseGenerator(llm)
+                        Log.i(TAG, "LLM ResponseGenerator activated")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "LLM initialization failed", e)
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

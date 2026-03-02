@@ -15,7 +15,10 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK
 import android.widget.ScrollView
+import com.example.universal.edge.autonomous.AutonomousAgent
+import com.example.universal.edge.inference.EmotionAction
 import com.example.universal.edge.inference.EmotionOutput
+import com.example.universal.edge.inference.EmotionType
 import java.util.Locale
 // Put this _inside_ your MyAccessibilityService companion object, or at top level
 // so you only compute it once.
@@ -56,6 +59,42 @@ class MyAccessibilityService : AccessibilityService() {
     // ─────────────────────────────────────────────────────────────────────────────
     private var overlayView: EmotionOrbView? = null
     private var overlayWindowManager: WindowManager? = null
+    private var overlayParams: WindowManager.LayoutParams? = null
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Autonomous Agent
+    // ─────────────────────────────────────────────────────────────────────────────
+    private var autonomousAgent: AutonomousAgent? = null
+
+    fun toggleAutonomousMode() {
+        if (autonomousAgent?.isRunning == true) {
+            autonomousAgent?.stop()
+            autonomousAgent = null
+            // オーブをCALMに戻す
+            overlayView?.setEmotion(
+                EmotionOutput(
+                    selectedAction = EmotionAction(EmotionType.CALM, 0.5f),
+                    confidence = 1f,
+                    reasoning = "autonomous_off",
+                    fallbackUsed = false
+                )
+            )
+            Log.d("MyAccessibilityService", "Autonomous mode OFF")
+        } else {
+            autonomousAgent = AutonomousAgent(this)
+            autonomousAgent?.start()
+            // オーブをEXCITEMENTに変更（自律モード表示）
+            overlayView?.setEmotion(
+                EmotionOutput(
+                    selectedAction = EmotionAction(EmotionType.EXCITEMENT, 0.8f),
+                    confidence = 1f,
+                    reasoning = "autonomous_on",
+                    fallbackUsed = false
+                )
+            )
+            Log.d("MyAccessibilityService", "Autonomous mode ON")
+        }
+    }
 
     // ─────────────────────────────────────────────────────────────────────────────
     // Lifecycle Methods
@@ -76,6 +115,8 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        autonomousAgent?.stop()
+        autonomousAgent = null
         removeOverlay()
         super.onDestroy()
         instance = null
@@ -95,17 +136,29 @@ class MyAccessibilityService : AccessibilityService() {
                 size,
                 WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.TRANSLUCENT
             ).apply {
-                gravity = Gravity.TOP or Gravity.END
-                x = 16
+                gravity = Gravity.TOP or Gravity.START
+                x = resources.displayMetrics.widthPixels - size - 16
                 y = 100
             }
-            overlayView = EmotionOrbView(this).also {
-                overlayWindowManager?.addView(it, params)
+            overlayParams = params
+
+            val orb = EmotionOrbView(this)
+            orb.onDragListener = { dx, dy ->
+                overlayParams?.let { p ->
+                    p.x += dx
+                    p.y += dy
+                    try {
+                        overlayWindowManager?.updateViewLayout(orb, p)
+                    } catch (_: Exception) {}
+                }
             }
+            orb.onTapListener = { toggleAutonomousMode() }
+
+            overlayView = orb
+            overlayWindowManager?.addView(orb, params)
             Log.d("MyAccessibilityService", "Overlay eye created")
         } catch (e: Exception) {
             Log.e("MyAccessibilityService", "Failed to create overlay: ${e.message}")

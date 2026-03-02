@@ -113,6 +113,9 @@ dependencies {
     // MediaPipe Vision (表情報酬評価)
     implementation("com.google.mediapipe:tasks-vision:0.10.14")
 
+    // MediaPipe GenAI (ローカルLLM推論 - Gemma 2B)
+    implementation("com.google.mediapipe:tasks-genai:0.10.27")
+
     // CameraX (MediaPipe FaceMesh用)
     val cameraXVersion = "1.3.4"
     implementation("androidx.camera:camera-core:$cameraXVersion")

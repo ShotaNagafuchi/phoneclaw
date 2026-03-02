@@ -18,6 +18,7 @@ import com.example.universal.R
 import com.example.universal.MyAccessibilityService
 import com.example.universal.edge.EdgeAIManager
 import com.example.universal.edge.SoulManager
+import com.example.universal.edge.inference.LlmModelManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -61,6 +62,19 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
         val manager = EdgeAIManager.instance
         view.findViewById<TextView>(R.id.aiEngine).text =
             "エンジン: ${manager?.currentEngineName() ?: "未初期化"}"
+
+        // LLMモデル状態
+        val llmStatus = when (LlmModelManager.state) {
+            LlmModelManager.ModelState.NOT_DOWNLOADED -> "未DL"
+            LlmModelManager.ModelState.DOWNLOADING ->
+                "DL中 ${(LlmModelManager.downloadProgress * 100).toInt()}%"
+            LlmModelManager.ModelState.READY -> "Gemma 2B 準備完了"
+            LlmModelManager.ModelState.ERROR ->
+                "エラー: ${LlmModelManager.errorMessage?.take(30) ?: "不明"}"
+        }
+        val generatorName = manager?.currentGeneratorName() ?: "---"
+        view.findViewById<TextView>(R.id.aiEngine).text =
+            "エンジン: ${manager?.currentEngineName() ?: "未初期化"} / $generatorName ($llmStatus)"
 
         // Toggles
         val prefs = ctx.getSharedPreferences("phoneclaw_settings", Context.MODE_PRIVATE)

@@ -7,7 +7,11 @@ import com.example.universal.edge.data.EdgeDatabase
 import com.example.universal.edge.data.entity.AIDiaryEntry
 import com.example.universal.edge.inference.EmotionOutput
 import com.example.universal.edge.inference.IEmotionEngine
+import com.example.universal.edge.inference.IResponseGenerator
 import com.example.universal.edge.inference.RuleBasedEmotionEngine
+import com.example.universal.edge.inference.SoulAwareResponseGenerator
+import com.example.universal.MyAccessibilityService
+import com.example.universal.SoulManager
 import com.example.universal.edge.learning.FaceRewardEvaluator
 import com.example.universal.edge.learning.IRewardEvaluator
 import com.example.universal.edge.learning.LearningOrchestrator
@@ -48,6 +52,9 @@ class EdgeAIManager private constructor(private val context: Context) {
 
     // 推定層（差し替え可能）
     private var emotionEngine: IEmotionEngine = RuleBasedEmotionEngine(bandit)
+
+    // テキスト生成層（差し替え可能: SoulAwareTemplate → LLM）
+    private var responseGenerator: IResponseGenerator = SoulAwareResponseGenerator()
 
     // 最後の推論結果（学習時に参照）
     private var lastOutput: EmotionOutput? = null
@@ -92,6 +99,32 @@ class EdgeAIManager private constructor(private val context: Context) {
         emotionEngine = newEngine
         Log.d(TAG, "Engine swapped to: ${newEngine.engineName}")
     }
+
+    /**
+     * テキスト生成器を差し替える（LLMダウンロード完了時に使用）。
+     */
+    fun swapResponseGenerator(gen: IResponseGenerator) {
+        responseGenerator = gen
+        Log.d(TAG, "ResponseGenerator swapped to: ${gen.generatorName}")
+    }
+
+    /**
+     * 感情出力からテキスト応答を生成する。
+     * soul.mdの性格設定と画面コンテキストを自動取得して反映。
+     */
+    suspend fun generateTextResponse(output: EmotionOutput, ctx: Context): String {
+        val soul = try { SoulManager.getSoul(ctx) } catch (_: Exception) { null }
+        val screen = try {
+            MyAccessibilityService.instance?.getAllTextFromScreen()
+        } catch (_: Exception) { null }
+        return responseGenerator.generateResponse(output, soul, screen)
+    }
+
+    /** 現在のテキスト生成器名を取得 */
+    fun currentGeneratorName(): String = responseGenerator.generatorName
+
+    /** テキスト生成器が準備完了か */
+    fun isGeneratorReady(): Boolean = responseGenerator.isReady()
 
     /**
      * 現在の文脈に基づいてAIのリアクションを推論する。
