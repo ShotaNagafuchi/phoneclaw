@@ -3,7 +3,7 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.ksp)
     id("com.google.gms.google-services")
 }
 
@@ -106,7 +106,7 @@ dependencies {
     // Room (Edge AI データ層)
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
 
     // WorkManager (夜間メモリ統合)
