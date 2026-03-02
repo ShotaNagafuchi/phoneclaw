@@ -20,7 +20,7 @@ android {
     defaultConfig {
         applicationId = "com.example.universal"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 35
         versionCode = autoVersionCode
         versionName = "1.1.0"
 
@@ -111,13 +111,13 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     // MediaPipe Vision (表情報酬評価)
-    implementation("com.google.mediapipe:tasks-vision:0.10.14")
+    implementation("com.google.mediapipe:tasks-vision:0.10.24")
 
-    // MediaPipe GenAI (ローカルLLM推論 - Gemma 2B)
+    // MediaPipe GenAI (ローカルLLM推論 - Gemma 3 1B QAT INT4)
     implementation("com.google.mediapipe:tasks-genai:0.10.27")
 
     // CameraX (MediaPipe FaceMesh用)
-    val cameraXVersion = "1.3.4"
+    val cameraXVersion = "1.5.1"
     implementation("androidx.camera:camera-core:$cameraXVersion")
     implementation("androidx.camera:camera-camera2:$cameraXVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraXVersion")
