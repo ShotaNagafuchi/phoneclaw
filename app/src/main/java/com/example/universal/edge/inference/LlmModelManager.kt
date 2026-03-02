@@ -12,24 +12,29 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
- * Gemma 2B INT4 モデルのダウンロード・ライフサイクル管理。
+ * Gemma 3 1B IT INT4 (QAT) モデルのダウンロード・ライフサイクル管理。
  *
  * - Wi-Fi接続時のみ自動DL
  * - context.filesDir/llm_models/ に保存
  * - 進捗コールバック付き
+ *
+ * Gemma 2B INT4 (~1.3GB) → Gemma 3 1B QAT INT4 (~529MB) に移行。
+ * サイズ60%減、prefill速度85x向上、RAM半減。
  */
 object LlmModelManager {
 
     private const val TAG = "LlmModelManager"
 
     private const val MODEL_DIR = "llm_models"
-    private const val MODEL_FILENAME = "gemma-2b-it-gpu-int4.bin"
+    private const val MODEL_FILENAME = "gemma3-1b-it-int4.task"
 
-    // HuggingFace から Gemma 2B IT INT4 モデル (MediaPipe形式)
+    // HuggingFace litert-community: Gemma 3 1B IT INT4 QAT (.task形式)
+    // ※ Gemmaライセンス同意が必要。403エラー時は手動DL:
+    //    adb push gemma3-1b-it-int4.task /data/data/com.example.universal/files/llm_models/
     private const val MODEL_URL =
-        "https://storage.googleapis.com/mediapipe-models/llm_inference/gemma2_2b_it_gpu_int4/float16/latest/model.bin"
+        "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task"
 
-    private const val EXPECTED_MIN_SIZE_BYTES = 500_000_000L // ~500MB 最低サイズ
+    private const val EXPECTED_MIN_SIZE_BYTES = 200_000_000L // ~200MB 最低サイズ (実際は~529MB)
 
     enum class ModelState {
         NOT_DOWNLOADED,

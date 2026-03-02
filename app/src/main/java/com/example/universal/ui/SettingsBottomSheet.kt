@@ -68,7 +68,7 @@ class SettingsBottomSheet : BottomSheetDialogFragment() {
             LlmModelManager.ModelState.NOT_DOWNLOADED -> "未DL"
             LlmModelManager.ModelState.DOWNLOADING ->
                 "DL中 ${(LlmModelManager.downloadProgress * 100).toInt()}%"
-            LlmModelManager.ModelState.READY -> "Gemma 2B 準備完了"
+            LlmModelManager.ModelState.READY -> "Gemma 3 1B 準備完了"
             LlmModelManager.ModelState.ERROR ->
                 "エラー: ${LlmModelManager.errorMessage?.take(30) ?: "不明"}"
         }

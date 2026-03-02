@@ -5,14 +5,16 @@ import android.util.Log
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 
 /**
- * MediaPipe Gemma 2B によるオンデバイスLLMテキスト生成。
+ * MediaPipe Gemma 3 1B (QAT INT4) によるオンデバイスLLMテキスト生成。
  *
  * soul.md性格 + 感情 + 画面コンテキストからプロンプトを組み立て、
  * 日本語で一言を生成する。失敗時はEmotionResponseMapperにフォールバック。
+ *
+ * Gemma 3 1B QAT: 529MB, prefill 2,585 tok/s, RAM ~1GB
  */
 class LlmResponseGenerator(private val context: Context) : IResponseGenerator {
 
-    override val generatorName = "GemmaLLM"
+    override val generatorName = "Gemma3-1B"
 
     private var llmInference: LlmInference? = null
 
