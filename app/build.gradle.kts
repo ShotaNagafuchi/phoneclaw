@@ -113,7 +113,7 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     // MediaPipe Vision (表情報酬評価)
-    implementation("com.google.mediapipe:tasks-vision:0.10.24")
+    implementation("com.google.mediapipe:tasks-vision:0.10.14")
 
     // MediaPipe GenAI (ローカルLLM推論 - Gemma 3 1B QAT INT4)
     implementation("com.google.mediapipe:tasks-genai:0.10.27")
