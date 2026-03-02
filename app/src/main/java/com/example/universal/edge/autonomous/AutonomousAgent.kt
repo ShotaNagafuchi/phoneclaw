@@ -132,15 +132,15 @@ class AutonomousAgent(private val context: Context) {
                 val display = (context.getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager).defaultDisplay
                 val w = display.width
                 val h = display.height
-                val cx = w / 2
-                val cy = h / 2
-                val dist = h / 3
+                val cx = w / 2f
+                val cy = h / 2f
+                val dist = h / 3f
 
                 when (action.direction) {
-                    SwipeDirection.UP -> service.simulateSwipe(cx, cy + dist, cx, cy - dist, 300)
-                    SwipeDirection.DOWN -> service.simulateSwipe(cx, cy - dist, cx, cy + dist, 300)
-                    SwipeDirection.LEFT -> service.simulateSwipe(cx + dist, cy, cx - dist, cy, 300)
-                    SwipeDirection.RIGHT -> service.simulateSwipe(cx - dist, cy, cx + dist, cy, 300)
+                    SwipeDirection.UP -> service.simulateSwipe(cx, cy + dist, cx, cy - dist)
+                    SwipeDirection.DOWN -> service.simulateSwipe(cx, cy - dist, cx, cy + dist)
+                    SwipeDirection.LEFT -> service.simulateSwipe(cx + dist, cy, cx - dist, cy)
+                    SwipeDirection.RIGHT -> service.simulateSwipe(cx - dist, cy, cx + dist, cy)
                 }
             }
             is AgentAction.GoBack -> {
