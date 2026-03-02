@@ -30,6 +30,29 @@
     <string name="widget_calendar">Schedule</string>
     <string name="widget_refresh">Refresh</string>
 
+    <!-- Universal Script -->
+    <string name="script_initializing">Initializing script…</string>
+    <string name="script_loaded_success">Script loaded successfully</string>
+    <string name="script_loaded_cached">Script loaded from cache</string>
+    <string name="script_unable_to_load">Unable to load script</string>
+    <string name="script_error_loading">Error loading script</string>
+    <string name="script_scheduled_daily">Daily script scheduled</string>
+    <string name="script_status_running_daily">Running daily script…</string>
+    <string name="script_running_daily">Running daily script</string>
+    <string name="script_daily_completed">Daily script completed</string>
+    <string name="script_status_daily_completed">Daily script done</string>
+    <string name="script_daily_empty">Daily script is empty</string>
+    <string name="script_error_executing_daily">Error executing daily script</string>
+    <string name="script_status_error_daily">Daily script error</string>
+    <string name="script_status_reloading">Reloading script…</string>
+    <string name="script_reloading">Reloading script</string>
+    <string name="script_updated_success">Script updated successfully</string>
+    <string name="script_status_updated">Script updated</string>
+    <string name="script_reload_failed">Script reload failed</string>
+    <string name="script_status_reload_failed">Reload failed</string>
+    <string name="script_error_reloading">Error reloading script</string>
+    <string name="script_cannot_delete_daily">Cannot delete daily script</string>
+
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>

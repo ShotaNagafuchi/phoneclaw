@@ -39,7 +39,6 @@ class LlmResponseGenerator(private val context: Context) : IResponseGenerator {
             val options = LlmInference.LlmInferenceOptions.builder()
                 .setModelPath(modelPath)
                 .setMaxTokens(64)
-                .setTopK(40)
                 .setTemperature(0.8f)
                 .setRandomSeed(System.currentTimeMillis().toInt())
                 .build()

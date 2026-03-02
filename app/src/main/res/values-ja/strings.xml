@@ -25,6 +25,29 @@
     <!-- MainActivity -->
     <string name="accessibility_please_enable">音声自動化のため、ユーザー補助でアクセシビリティサービスを有効にしてください。</string>
 
+    <!-- Universal Script -->
+    <string name="script_initializing">スクリプト初期化中…</string>
+    <string name="script_loaded_success">スクリプト読み込み完了</string>
+    <string name="script_loaded_cached">キャッシュから読み込み</string>
+    <string name="script_unable_to_load">スクリプトを読み込めません</string>
+    <string name="script_error_loading">読み込みエラー</string>
+    <string name="script_scheduled_daily">日次スクリプト予約済み</string>
+    <string name="script_status_running_daily">日次スクリプト実行中…</string>
+    <string name="script_running_daily">日次スクリプト実行中</string>
+    <string name="script_daily_completed">日次スクリプト完了</string>
+    <string name="script_status_daily_completed">日次スクリプト完了</string>
+    <string name="script_daily_empty">日次スクリプトが空です</string>
+    <string name="script_error_executing_daily">日次スクリプト実行エラー</string>
+    <string name="script_status_error_daily">日次スクリプトエラー</string>
+    <string name="script_status_reloading">スクリプト再読み込み中…</string>
+    <string name="script_reloading">スクリプト再読み込み中</string>
+    <string name="script_updated_success">スクリプト更新完了</string>
+    <string name="script_status_updated">スクリプト更新済み</string>
+    <string name="script_reload_failed">再読み込み失敗</string>
+    <string name="script_status_reload_failed">再読み込み失敗</string>
+    <string name="script_error_reloading">再読み込みエラー</string>
+    <string name="script_cannot_delete_daily">日次スクリプトは削除できません</string>
+
     <!-- Widget buttons -->
     <string name="widget_search">検索</string>
     <string name="widget_wifi">Wi‑Fi</string>
