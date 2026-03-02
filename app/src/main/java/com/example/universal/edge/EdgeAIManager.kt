@@ -11,7 +11,7 @@ import com.example.universal.edge.inference.IResponseGenerator
 import com.example.universal.edge.inference.RuleBasedEmotionEngine
 import com.example.universal.edge.inference.SoulAwareResponseGenerator
 import com.example.universal.MyAccessibilityService
-import com.example.universal.SoulManager
+// SoulManager is in same package (com.example.universal.edge) — no import needed
 import com.example.universal.edge.learning.FaceRewardEvaluator
 import com.example.universal.edge.learning.IRewardEvaluator
 import com.example.universal.edge.learning.LearningOrchestrator

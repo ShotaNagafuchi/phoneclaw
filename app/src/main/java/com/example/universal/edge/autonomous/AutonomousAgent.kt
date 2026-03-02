@@ -3,6 +3,7 @@ package com.example.universal.edge.autonomous
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.content.Intent
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import com.example.universal.MyAccessibilityService
 import com.example.universal.edge.EdgeAIManager
@@ -10,6 +11,7 @@ import com.example.universal.edge.inference.EmotionOutput
 import com.example.universal.edge.inference.EmotionType
 import com.example.universal.edge.inference.EmotionAction
 import kotlinx.coroutines.*
+import java.util.Locale
 
 /**
  * フル自律操作エージェント。
@@ -36,8 +38,18 @@ class AutonomousAgent(private val context: Context) {
 
     private val actionPlanner = LlmActionPlanner(context)
 
+    private var tts: TextToSpeech? = null
+    @Volatile
+    private var ttsReady = false
+
     fun start() {
         if (isRunning) return
+
+        // TTS初期化
+        tts = TextToSpeech(context) { status ->
+            ttsReady = (status == TextToSpeech.SUCCESS)
+            tts?.language = Locale.JAPANESE
+        }
         isRunning = true
         actionCount = 0
         Log.i(TAG, "Autonomous mode started")
@@ -64,6 +76,10 @@ class AutonomousAgent(private val context: Context) {
         isRunning = false
         job?.cancel()
         job = null
+        tts?.stop()
+        tts?.shutdown()
+        tts = null
+        ttsReady = false
         Log.i(TAG, "Autonomous mode stopped")
     }
 
@@ -129,9 +145,9 @@ class AutonomousAgent(private val context: Context) {
                 service.enterTextInField(action.text)
             }
             is AgentAction.Swipe -> {
-                val display = (context.getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager).defaultDisplay
-                val w = display.width
-                val h = display.height
+                val metrics = context.resources.displayMetrics
+                val w = metrics.widthPixels
+                val h = metrics.heightPixels
                 val cx = w / 2f
                 val cy = h / 2f
                 val dist = h / 3f
@@ -150,8 +166,12 @@ class AutonomousAgent(private val context: Context) {
                 service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
             }
             is AgentAction.Speak -> {
-                // TTS経由で発話
                 Log.d(TAG, "Agent speaks: ${action.text}")
+                if (ttsReady && tts != null) {
+                    tts!!.speak(action.text, TextToSpeech.QUEUE_FLUSH, null, "agent_${actionCount}")
+                } else {
+                    Log.w(TAG, "TTS not ready, skipping speech")
+                }
             }
             is AgentAction.Observe -> {
                 // 何もしない（次ループで再観察）
