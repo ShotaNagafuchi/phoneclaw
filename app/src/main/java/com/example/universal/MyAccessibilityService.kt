@@ -198,6 +198,10 @@ class MyAccessibilityService : AccessibilityService() {
     // Add this to your MyAccessibilityService class
     fun simulateSwipe(startX: Float, startY: Float, endX: Float, endY: Float) {
         try {
+            if (!startX.isFinite() || !startY.isFinite() || !endX.isFinite() || !endY.isFinite()) {
+                Log.w("MyAccessibilityService", "simulateSwipe: invalid coordinates ($startX,$startY)->($endX,$endY), skipping")
+                return
+            }
             val path = Path()
             path.moveTo(startX, startY)
             path.lineTo(endX, endY)
@@ -1489,6 +1493,10 @@ class MyAccessibilityService : AccessibilityService() {
     fun simulateClick(x: Float, y: Float) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w("MyAccessibilityService", "simulateClick requires API 24 or higher.")
+            return
+        }
+        if (x.isNaN() || y.isNaN() || !x.isFinite() || !y.isFinite()) {
+            Log.w("MyAccessibilityService", "simulateClick: invalid coordinates ($x, $y), skipping")
             return
         }
         val path = Path().apply { moveTo(x, y) }

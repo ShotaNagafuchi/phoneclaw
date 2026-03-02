@@ -140,7 +140,12 @@ data class MoondreamResponse(
 data class MoondreamPoint(
     val x: Double,
     val y: Double
-)
+) {
+    init {
+        require(x.isFinite()) { "MoondreamPoint x must be finite, got $x" }
+        require(y.isFinite()) { "MoondreamPoint y must be finite, got $y" }
+    }
+}
 
 data class CronTask(
     val id: String,
@@ -5412,7 +5417,7 @@ Generate JavaScript automation code for the user's command:
 
                                 trackMagicRun(
                                     "magicClicker", description,
-                                    "{\"x\": ${pixelX.toInt()}, \"y\": ${pixelY.toInt()}}"
+                                    "{\"x\": ${if (pixelX.isFinite()) pixelX.toInt() else 0}, \"y\": ${if (pixelY.isFinite()) pixelY.toInt() else 0}}"
                                 )
                             }
 
@@ -5750,8 +5755,13 @@ Generate JavaScript automation code for the user's command:
                             val x = firstPoint.getDouble("x")
                             val y = firstPoint.getDouble("y")
 
-                            Log.d("MainActivity", "Moondream found object at: ($x, $y)")
-                            MoondreamPoint(x, y)
+                            if (x.isNaN() || y.isNaN() || !x.isFinite() || !y.isFinite()) {
+                                Log.w("MainActivity", "Moondream returned invalid coordinates: ($x, $y)")
+                                null
+                            } else {
+                                Log.d("MainActivity", "Moondream found object at: ($x, $y)")
+                                MoondreamPoint(x, y)
+                            }
                         } else {
                             Log.w("MainActivity", "Moondream API returned no points")
                             null
@@ -5800,7 +5810,9 @@ Generate JavaScript automation code for the user's command:
                         }
 
 
-                        val outputPoint = "{\"x\": ${floor(pixelX).toInt()}, \"y\": ${floor(pixelY).toInt()}}"
+                        val safePixelX = if (pixelX.isFinite()) floor(pixelX).toInt() else 0
+                        val safePixelY = if (pixelY.isFinite()) floor(pixelY).toInt() else 0
+                        val outputPoint = "{\"x\": $safePixelX, \"y\": $safePixelY}"
                         trackMagicRun("magicClicker", description, outputPoint)
                     } else {
                         withContext(Dispatchers.Main) {
@@ -5862,7 +5874,9 @@ Generate JavaScript automation code for the user's command:
                         speakText("Clicked on $description")
                     }
 
-                    val outputPoint = "{\"x\": ${floor(pixelX).toInt()}, \"y\": ${floor(pixelY).toInt()}}"
+                    val safePixelX = if (pixelX.isFinite()) floor(pixelX).toInt() else 0
+                    val safePixelY = if (pixelY.isFinite()) floor(pixelY).toInt() else 0
+                    val outputPoint = "{\"x\": $safePixelX, \"y\": $safePixelY}"
                     trackMagicRun("magicClicker", description, outputPoint)
                 } else {
                     withContext(Dispatchers.Main) {
@@ -8361,8 +8375,13 @@ Generate JavaScript automation code for the user's command:
                         val x = firstPoint.getDouble("x")
                         val y = firstPoint.getDouble("y")
 
-                        Log.d("MainActivity", "Moondream found object at: ($x, $y)")
-                        MoondreamPoint(x, y)
+                        if (x.isNaN() || y.isNaN() || !x.isFinite() || !y.isFinite()) {
+                            Log.w("MainActivity", "Moondream returned invalid coordinates: ($x, $y)")
+                            null
+                        } else {
+                            Log.d("MainActivity", "Moondream found object at: ($x, $y)")
+                            MoondreamPoint(x, y)
+                        }
                     } else {
                         Log.w("MainActivity", "Moondream API returned no points")
                         null
